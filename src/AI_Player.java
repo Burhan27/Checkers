@@ -46,7 +46,7 @@ public class AI_Player {
         else if(depth == 0){
             int current_value;
             int best_value = MIN;
-            for(Tile tile: tiles){
+            for(Tile tile: board){
                 //System.out.println("tile pos" + tile.position);
                 if(tile.getGraphic().equals("")) {
                     tile.setGraphic("O");
@@ -74,20 +74,20 @@ public class AI_Player {
             if (depth % 2 == 0) {
                 int max = MIN;
 
-                for(int i = 0; i < tiles.size(); i++) {
-                    if (tiles.get(i).graphic.equals("")) {
-                        tiles.get(i).setGraphic("O");
+                for(int i = 0; i < board.size(); i++) {
+                    if (board.get(i).graphic.equals("")) {
+                        board.get(i).setGraphic("O");
                         int child_value = AlphaBeta(depth + 1, moves,alpha, beta);
-                        tiles.get(i).setGraphic("");
+                        board.get(i).setGraphic("");
                         max = Math.max(max, child_value);
                         if(max > alpha){
                             alpha = max;
                             if(path.size() < depth){
-                                path.add(tiles.get(i));
+                                path.add(board.get(i));
                             }
                             else{
                                 path.remove(depth-1);
-                                path.add(tiles.get(i));
+                                path.add(board.get(i));
                             }
                         }
                         if (alpha >= beta) {
@@ -100,20 +100,20 @@ public class AI_Player {
 
             else {
                 int min = MAX;
-                for(int i = 0; i < tiles.size(); i++) {
-                    if (tiles.get(i).graphic.equals("")) {
-                        tiles.get(i).setGraphic("X");
+                for(int i = 0; i < board.size(); i++) {
+                    if (board.get(i).graphic.equals("")) {
+                        board.get(i).setGraphic("X");
                         int child_value = AlphaBeta(depth + 1, moves, alpha, beta);
-                        tiles.get(i).setGraphic("");
+                        board.get(i).setGraphic("");
                         min = Math.min(min, child_value);
                         if(min < beta){
                             beta = min;
                             if(path.size() < depth){
-                                path.add(tiles.get(i));
+                                path.add(board.get(i));
                             }
                             else{
                                 path.remove(depth-1);
-                                path.add(tiles.get(i));
+                                path.add(board.get(i));
                             }
                         }
                         if (alpha >= beta) {

@@ -16,7 +16,7 @@ public class Main {
         };
 
 
-        gameLogic(board);
+        GameLogic gameLogic = new GameLogic();
 
     }
 

@@ -189,13 +189,12 @@ public class GameLogic {
             return value;
 
         } else if (depth == MAX_DEPTH) {
-
             int value = 0;
             for (int i = 0; i < path.size(); i++) {
                 if (path.get(i).getGraphic().equals("O")) {
-                    value += path.get(i).Value;
+                    value += path.get(i).getPiece().getValue();
                 } else if (path.get(i).getGraphic().equals("X")) {
-                    value -= path.get(i).Value;
+                    value -= path.get(i).getPiece().getValue();
                 }
             }
             return value;

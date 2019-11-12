@@ -2,6 +2,7 @@ public class Piece {
 
     Boolean isKing;
     String graphic;
+    int value = 10;
 
     public Piece(Boolean isKing, String graphic) {
         this.isKing = isKing;
@@ -22,5 +23,13 @@ public class Piece {
 
     public void setGraphic(String graphic) {
         this.graphic = graphic;
+    }
+
+    public void setValue(int value) {
+        value = value;
+    }
+
+    public int getValue(){
+        return value;
     }
 }

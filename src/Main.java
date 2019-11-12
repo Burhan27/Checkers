@@ -129,12 +129,18 @@ void printBoard(String[][] board){
          }
   */
 
-         /*
-    static String[][] placeMove(int positionX, int positonY, String[][] Board, String player) {
-        Board[positionX][positonY] = player;
+
+    static String[][] placeMove(int x, int y, String[][] Board, String player) {
+       //Tjek om brikken er DamBLACK.
+
+        //Tjek først om feltet er skråt for
+
+        //Fjern bræk og sæt nyt op
+
+    Board[x][y] = player;
         return Board;
     }
-*/
+
 
 
 }

@@ -171,9 +171,60 @@ public class GameLogic {
         } else return "";
     }
 
-    String[][] placeMove(int positionX, int positonY, String[][] Board, String player) {
-        Board[positionX][positonY] = player;
-        return Board;
+    ArrayList<Tile> placeMove(Piece piece, int destination ) {
+
+        if (piece.getGraphic().equals("W") || piece.isKing) {
+            if( ((piece.placement+1)%8) > ((destination+1)%8) ) {
+                while(!(piece.placement == destination)) {
+                    board.get(piece.placement).setGraphic("-");
+                    piece.value += 9;
+                }
+                if(board.get(destination).isEndTile()) {
+                    piece.setKing(true);
+                    board.get(piece.placement).setGraphic(piece.getGraphic());
+                } else {
+                    board.get(piece.placement).setGraphic(piece.getGraphic());
+                }
+            } else {
+                while(!(piece.placement == destination)) {
+                    board.get(piece.placement).setGraphic("-");
+                    piece.value += 7;
+                }
+                if(board.get(destination).isEndTile()) {
+                    piece.setKing(true);
+                    board.get(piece.placement).setGraphic(piece.getGraphic());
+                } else {
+                    board.get(piece.placement).setGraphic(piece.getGraphic());
+                }
+            }
+        } else if(piece.getGraphic().equals("B") || piece.isKing) {
+            if( ((piece.placement+1)%8) > ((destination+1)%8) ) {
+                while(!(piece.placement == destination)) {
+                    board.get(piece.placement).setGraphic("-");
+                    piece.value -= 9;
+                }
+                if(board.get(destination).isEndTile()) {
+                    piece.setKing(true);
+                    board.get(piece.placement).setGraphic(piece.getGraphic());
+                } else {
+                    board.get(piece.placement).setGraphic(piece.getGraphic());
+                }
+            } else {
+                while(!(piece.placement == destination)) {
+                    board.get(piece.placement).setGraphic("-");
+                    piece.value -= 7;
+                }
+                if(board.get(destination).isEndTile()) {
+                    piece.setKing(true);
+                    board.get(piece.placement).setGraphic(piece.getGraphic());
+                } else {
+                    board.get(piece.placement).setGraphic(piece.getGraphic());
+                }
+            }
+
+        }
+
+        return board;
     }
 
     private int AlphaBeta(int depth, ArrayList<Tile> moves, int alpha, int beta) {

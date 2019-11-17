@@ -3,7 +3,7 @@ import java.util.ArrayList;
 public class AI_Player {
 
     ArrayList<Tile> path = new ArrayList<Tile>();
-
+/*
     private int AlphaBeta(int depth, ArrayList<Tile> moves, int alpha, int beta){
 
         if(isLost()){
@@ -129,5 +129,5 @@ public class AI_Player {
         return 0;
     }
 
-
+*/
 }

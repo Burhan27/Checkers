@@ -3,6 +3,7 @@ public class Piece {
     Boolean isKing;
     String graphic;
     int value = 10;
+    int placement;
 
     public Piece(Boolean isKing, String graphic) {
         this.isKing = isKing;
@@ -15,6 +16,9 @@ public class Piece {
 
     public void setKing(Boolean king) {
         isKing = king;
+        if(king == true) {
+            setGraphic(graphic + "K");
+        }
     }
 
     public String getGraphic() {

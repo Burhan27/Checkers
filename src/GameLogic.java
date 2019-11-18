@@ -88,10 +88,10 @@ public class GameLogic {
             if (y == 1) {
                 position = y * x - 1;
             } else position = ((y * 8) + x) - 1;
-            while (!checkMove(position, board)) {
+            /*while (!checkMove(position, board)) {
                 System.out.print("Vælg et felt, som ikke er optaget!");
                 playerTurn();
-            }
+            }*/
         } else {
             System.out.println("Vælg to tal mellem 1 og 8!");
         }
@@ -127,14 +127,45 @@ public class GameLogic {
 
     }
 
+    private boolean checkSpecialMove(Piece piece, int destination){
+        //TODO: check for diagonals for both kings and non-kings for special moves (Kills etc.)
+        /*
+        tjek distancen mellem destinationen og brikkens nuværende position.
+         */
+        return false;
+    }
 
-    boolean checkMove(int position, ArrayList<Tile> board) {
+    private boolean checkNormalMove(Piece piece, int destination) {
 
-        if (board.get(position).getGraphic().equals(" - ")) {
-            return true;
-        } else if (position > -1 || position < BOARD_SIZE) {
-            return true;
-        } else return false;
+
+        if(!board.get(destination).isDark){
+            return false;
+        }
+        else {
+            int dest_X = destination % 8;
+            int dest_Y = destination / 8;
+            int piece_X = piece.placement & 8;
+            int piece_Y = piece.placement / 8;
+
+            if (!(piece_X - 1 == dest_X || piece_X + 1 == dest_X)) {
+                if(!piece.isKing && piece.graphic.equals("B")){
+                    if(dest_Y == piece_Y + 1){
+                        return true;
+                    }
+
+                }
+                else if(!piece.isKing && piece.graphic.equals("W")) {
+                    if (dest_Y == piece_Y - 1) {
+                        return true;
+                    }
+                }
+                else if(piece.isKing && (dest_Y == piece_Y+1 || dest_Y == piece_Y-1)){
+                    return true;
+                }
+            }
+            else return false;
+        }
+        return false;
     }
 
 
@@ -151,7 +182,7 @@ public class GameLogic {
         return false;
     }
 
-    String getWinner() {
+    private String getWinner() {
         int countW = 0, countB = 0;
 
         for (Tile t :
@@ -171,10 +202,10 @@ public class GameLogic {
         } else return "";
     }
 
-    ArrayList<Tile> placeMove(Piece piece, int destination ) {
+    private ArrayList<Tile> placeMove(Piece piece, int destination ) {
 
         if (piece.getGraphic().equals("W") || piece.isKing) {
-            if( ((piece.placement+1)%8) > ((destination+1)%8) ) {
+            if( ((piece.placement)%8) > ((destination)%8) ) {
                 while(!(piece.placement == destination)) {
                     board.get(piece.placement).setGraphic("-");
                     piece.value += 9;
@@ -198,7 +229,7 @@ public class GameLogic {
                 }
             }
         } else if(piece.getGraphic().equals("B") || piece.isKing) {
-            if( ((piece.placement+1)%8) > ((destination+1)%8) ) {
+            if( ((piece.placement)%8) > ((destination)%8) ) {
                 while(!(piece.placement == destination)) {
                     board.get(piece.placement).setGraphic("-");
                     piece.value -= 9;

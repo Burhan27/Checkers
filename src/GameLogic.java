@@ -178,7 +178,6 @@ public class GameLogic {
     private boolean noPossibleMoves() {
 
         //TODO: logic for checking if a player still can make moves.
-
         return false;
     }
 

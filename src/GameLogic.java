@@ -190,6 +190,8 @@ private ArrayList<Tile> generateBoard() {
     private String getWinner() {
         int countW = 0, countB = 0;
 
+        //Tjek om nogle af dem har mulige moves, hvis ikke har så vinder den anden
+
         for (Tile t :
                 board) {
             if (t.getGraphic().equals(" W ")) {
@@ -197,7 +199,6 @@ private ArrayList<Tile> generateBoard() {
             } else if (t.getGraphic().equals(" B ")) {
                 countB++;
             } else continue;
-
         }
 
         if (countW == 0) {
@@ -263,10 +264,14 @@ private ArrayList<Tile> generateBoard() {
         } else{
             int value = 0;
             for (int i = 0; i < path.size(); i++) {
-                if (path.get(i).getGraphic().equals("O")) {
-                    value += path.get(i).getPiece().getValue();
-                } else if (path.get(i).getGraphic().equals("X")) {
-                    value -= path.get(i).getPiece().getValue();
+                if (path.get(i).getGraphic().equals(" B ")) {
+                    value += 2;
+                } else if (path.get(i).getGraphic().equals(" W ")) {
+                    value -= 2;
+                } else if (path.get(i).getGraphic().equals(" B K ")) {
+                    value += 4;
+                } else if (path.get(i).getGraphic().equals(" W K")) {
+                    value -= 4;
                 }
             }
             return value;

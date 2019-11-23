@@ -5,9 +5,10 @@ public class Piece {
     int value = 10;
     int placement;
 
-    public Piece(Boolean isKing, String graphic) {
+    public Piece(Boolean isKing, String graphic,int placement) {
         this.isKing = isKing;
         this.graphic = graphic;
+        this.placement = placement;
     }
 
     public Boolean getKing() {

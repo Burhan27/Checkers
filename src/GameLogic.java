@@ -13,28 +13,12 @@ public class GameLogic {
 
     public GameLogic() {
 
-        board = generateBoard2();
+        board = generateBoard();
         printBoard();
         gameFlow();
     }
 
-    private ArrayList<Tile> generateBoard2() {
-        for (int i = 0; i < BOARD_SIZE; i++) {
-
-            if (i == 0 || i == 2 || i == 18 || i == 36 || i == 45) {
-                board.add(i, (new Tile(true, false, new Piece(false, " B "), " B ")));
-            } else if (i == 9 || i == 13) {
-                board.add(i, (new Tile(true, false, new Piece(false, " W "), " W ")));
-            } else {
-                board.add(new Tile(true, true, null, " - "));
-            }
-        }
-
-        return board;
-
-    }
-
-    private ArrayList<Tile> generateBoard() {
+private ArrayList<Tile> generateBoard() {
         int row_count;
 
         for (int i = 0; i < BOARD_SIZE; i++) {
@@ -44,30 +28,30 @@ public class GameLogic {
                 if (i % 2 != 0) {
                     if (row_count < 3) {
                         if (row_count == 0) {
-                            board.add(new Tile(true, true, new Piece(false, " B "), " B "));
-                        } else board.add(new Tile(true, false, new Piece(false, " B "), " B "));
+                            board.add(new Tile(true, true, new Piece(false, " B ", board.size()), " B "));
+                        } else board.add(new Tile(true, false, new Piece(false, " B ", board.size()), " B "));
                     } else if (row_count > 4) {
                         if (row_count == 7) {
-                            board.add(new Tile(true, true, new Piece(false, " W "), " W "));
-                        } else board.add(new Tile(true, false, new Piece(false, " W "), " W "));
+                            board.add(new Tile(true, true, new Piece(false, " W ", board.size()), " W "));
+                        } else board.add(new Tile(true, false, new Piece(false, " W ", board.size()), " W "));
                     } else {
                         board.add(new Tile(true, false, null, " - "));
                     }
-                } else board.add(new Tile(false, false, null, " - "));
+                } else board.add(new Tile(false, false, null, " X "));
             } else {
                 if (i % 2 == 0) {
                     if (row_count < 3) {
                         if (row_count == 0) {
-                            board.add(new Tile(true, true, new Piece(false, " B "), " B "));
-                        } else board.add(new Tile(true, false, new Piece(false, " B "), " B "));
+                            board.add(new Tile(true, true, new Piece(false, " B ", board.size()), " B "));
+                        } else board.add(new Tile(true, false, new Piece(false, " B ", board.size()), " B "));
                     } else if (row_count > 4) {
                         if (row_count == 7) {
-                            board.add(new Tile(true, true, new Piece(false, " W "), " W "));
-                        } else board.add(new Tile(true, false, new Piece(false, " W "), " W "));
+                            board.add(new Tile(true, true, new Piece(false, " W ", board.size()), " W "));
+                        } else board.add(new Tile(true, false, new Piece(false, " W ", board.size()), " W "));
                     } else {
                         board.add(new Tile(true, false, null, " - "));
                     }
-                } else board.add(new Tile(false, false, null, " - "));
+                } else board.add(new Tile(false, false, null, " X "));
             }
         }
         return board;
@@ -108,11 +92,17 @@ public class GameLogic {
             }
             System.out.println("Tast koordinatet for destination");
             moveW = keyboard.nextInt();
-            while (!(board.get(moveW).isDark == true)){
+            while (!(board.get(moveW).isDark)){
                 System.out.println("Tast rigtig koordinat");
                 pieceW = keyboard.nextInt();
             }
-            placeMove(pieceW, moveW);
+            boolean ale = checkNormalMove(pieceW, moveW);
+            if(ale == true) {
+                placeMove(pieceW, moveW);
+            }
+            else{
+                System.out.println("fuck dig ale");
+            }
         }
 
     }
@@ -154,24 +144,25 @@ public class GameLogic {
         return false;
     }
 
-    private boolean checkNormalMove(Piece piece, int destination) {
-
+    private boolean checkNormalMove(int start, int destination) {
+        Piece piece = board.get(start).getPiece();
+        System.out.println("PLACE: " + piece.placement);
 
         if (!board.get(destination).isDark) {
             return false;
         } else {
             int dest_X = destination % 8;
             int dest_Y = destination / 8;
-            int piece_X = piece.placement & 8;
-            int piece_Y = piece.placement / 8;
+            int piece_X = start % 8;
+            int piece_Y = start / 8;
 
-            if (!(piece_X - 1 == dest_X || piece_X + 1 == dest_X)) {
-                if (!piece.isKing && piece.graphic.equals("B")) {
+            if ((piece_X - 1 == dest_X || piece_X + 1 == dest_X)) {
+                if (!piece.isKing && piece.graphic.equals(" B ")) {
                     if (dest_Y == piece_Y + 1) {
                         return true;
                     }
 
-                } else if (!piece.isKing && piece.graphic.equals("W")) {
+                } else if (!piece.isKing && piece.graphic.equals(" W ")) {
                     if (dest_Y == piece_Y - 1) {
                         return true;
                     }
@@ -258,99 +249,7 @@ public class GameLogic {
         }
     }
 
-
-     /*   if(board.get(destination).isEndTile) {
-            board.get(destination).getPiece().setKing(true);
-        }
-       if (destination == (lokation - 9) || destination == (lokation - 7) || destination == (lokation + 9) || destination == (lokation + 7)) {
-           if (board.get(destination).equals(" B ")) {
-               if (destination == (lokation - 9)) {
-                   board.get(lokation).setGraphic(" - ");
-                   board.get(destination).setGraphic(" - ");
-                   destination -= 9;
-                   board.get(destination).setGraphic(" W ");
-               } else if (destination == (lokation - 7)) {
-                   board.get(lokation).setGraphic(" - ");
-                   board.get(destination).setGraphic(" - ");
-                   destination -= 7;
-                   board.get(destination).setGraphic(" W ");
-               } else if (destination == (lokation + 9)) {
-                   board.get(lokation).setGraphic(" - ");
-                   board.get(destination).setGraphic(" - ");
-                   destination += 9;
-                   board.get(destination).setGraphic(" W ");
-               } else if (destination == (lokation + 7)) {
-                   board.get(lokation).setGraphic(" - ");
-                   board.get(destination).setGraphic(" - ");
-                   destination += 7;
-                   board.get(destination).setGraphic(" W ");
-               }
-               return true;
-           } else if (board.get(destination).equals(" W ")) {
-               return false;
-           } else if (board.get(destination).equals(" - ")) {
-               board.get(lokation).setGraphic(" - ");
-               board.get(destination).setGraphic(" W ");
-               return true;
-           }
-
-       } */
-
-
-        /*
-        if (piece.getGraphic().equals("W") || piece.isKing) {
-            if( ((piece.placement)%8) > ((destination)%8) ) {
-                while(!(piece.placement == destination)) {
-                    board.get(piece.placement).setGraphic("-");
-                    piece.value += 9;
-                }
-                if(board.get(destination).isEndTile()) {
-                    piece.setKing(true);
-                    board.get(piece.placement).setGraphic(piece.getGraphic());
-                } else {
-                    board.get(piece.placement).setGraphic(piece.getGraphic());
-                }
-            } else {
-                while(!(piece.placement == destination)) {
-                    board.get(piece.placement).setGraphic("-");
-                    piece.value += 7;
-                }
-                if(board.get(destination).isEndTile()) {
-                    piece.setKing(true);
-                    board.get(piece.placement).setGraphic(piece.getGraphic());
-                } else {
-                    board.get(piece.placement).setGraphic(piece.getGraphic());
-                }
-            } */
-   /*     } else if(piece.getGraphic().equals("B") || piece.isKing) {
-            if( ((piece.placement)%8) > ((destination)%8) ) {
-                while(!(piece.placement == destination)) {
-                    board.get(piece.placement).setGraphic("-");
-                    piece.value -= 9;
-                }
-                if(board.get(destination).isEndTile()) {
-                    piece.setKing(true);
-                    board.get(piece.placement).setGraphic(piece.getGraphic());
-                } else {
-                    board.get(piece.placement).setGraphic(piece.getGraphic());
-                }
-            } else {
-                while(!(piece.placement == destination)) {
-                    board.get(piece.placement).setGraphic("-");
-                    piece.value -= 7;
-                }
-                if(board.get(destination).isEndTile()) {
-                    piece.setKing(true);
-                    board.get(piece.placement).setGraphic(piece.getGraphic());
-                } else {
-                    board.get(piece.placement).setGraphic(piece.getGraphic());
-                }
-            }
-*/
-
-
-    private int AlphaBeta(int depth, ArrayList<Tile> moves, int alpha, int beta) {
-
+    private int stateEvaluation(int depth){
         if (getWinner().equals("White")) {
             int value = 0;
             value -= 500 - depth;
@@ -361,7 +260,7 @@ public class GameLogic {
             value += 500 - depth;
             return value;
 
-        } else if (depth == MAX_DEPTH) {
+        } else{
             int value = 0;
             for (int i = 0; i < path.size(); i++) {
                 if (path.get(i).getGraphic().equals("O")) {
@@ -371,6 +270,13 @@ public class GameLogic {
                 }
             }
             return value;
+        }
+    }
+
+    private int AlphaBeta(int depth, ArrayList<Tile> moves, int alpha, int beta) {
+
+        if (depth == MAX_DEPTH || isGameOver()) {
+            return stateEvaluation(depth);
         }
 
 

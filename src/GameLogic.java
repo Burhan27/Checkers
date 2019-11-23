@@ -21,12 +21,12 @@ public class GameLogic {
     private ArrayList<Tile> generateBoard2() {
         for (int i = 0; i < BOARD_SIZE; i++) {
 
-            if(i == 0 || i == 2  || i == 18 || i == 36 || i ==45) {
-                board.add(i, (new Tile(false, false, new Piece(false, " B "), " B ")));
+            if (i == 0 || i == 2 || i == 18 || i == 36 || i == 45) {
+                board.add(i, (new Tile(true, false, new Piece(false, " B "), " B ")));
             } else if (i == 9 || i == 13) {
-                board.add(i, (new Tile(false, false, new Piece(false, " W "), " W ")));
+                board.add(i, (new Tile(true, false, new Piece(false, " W "), " W ")));
             } else {
-                board.add(new Tile(true, false, null, " - "));
+                board.add(new Tile(true, true, null, " - "));
             }
         }
 
@@ -88,58 +88,33 @@ public class GameLogic {
                 for (int j = 1; j < 9; j++) {
                     System.out.print(" |  " + j + "  ");
                 }
-                System.out.print("|");
+                System.out.print("|\n");
             } else System.out.print(" | " + board.get(i).getGraphic() + " ");
         }
     }
 
     private void playerTurn() {
         int pieceW, moveW;
-        System.out.println("Tast x koordinatet for den brik du gerne vil rykke");
+        System.out.println("Tast koordinatet for den brik du gerne vil rykke");
         pieceW = keyboard.nextInt();
 
-        while (!(board.get(pieceW).getGraphic() == " W ")) {
-            System.out.println("Tast rigtig koordinat");
-            pieceW = keyboard.nextInt();
+        if(pieceW == 99){
+            return;
         }
-
-        System.out.println("Tast x koordinatet for destination");
-        moveW = 0;
-        moveW = keyboard.nextInt();
-
-        while (!(moveW == 99)) {
-
-            if(placeMove(pieceW, moveW)) {
-               // placeMove(pieceW, moveW);
-                break;
+        else {
+            while (!(board.get(pieceW).getGraphic() == " W ")) {
+                System.out.println("Tast rigtig koordinat");
+                pieceW = keyboard.nextInt();
             }
-            System.out.println("Tast rigtig koordinat");
+            System.out.println("Tast koordinatet for destination");
             moveW = keyboard.nextInt();
-                }
-
-
-        //Real under
-        /*
-        while (!placeMove(pieceW, moveW)) {
-            System.out.println("Tast rigtig koordinat");
-            moveW = keyboard.nextInt();
+            while (!(board.get(moveW).isDark == true)){
+                System.out.println("Tast rigtig koordinat");
+                pieceW = keyboard.nextInt();
+            }
             placeMove(pieceW, moveW);
         }
-         */
-/*
-        if ((!(x > 0 && y < 9 && x < 9 && y > 0))) {
-            System.out.println(x + " " + y);
-            if (y == 1) {
-                position = y * x - 1;
-            } else position = ((y * 8) + x) - 1;
-            while (!checkMove(position, board)) {
-                System.out.print("Vælg et felt, som ikke er optaget!");
-                playerTurn();
-            }
-        } else {
-            System.out.println("Vælg to tal mellem 1 og 8!");
-        }
-        */
+
     }
 
     private void gameFlow() {
@@ -166,7 +141,6 @@ public class GameLogic {
             } else {
                 playerTurn();
             }
-
             printBoard();
         }
 
@@ -242,50 +216,46 @@ public class GameLogic {
         } else return "";
     }
 
-    private boolean placeMove(int lokation, int destination) {
+    private void placeMove(int lokation, int destination) {
 
-        if(board.get(destination).getGraphic().equals(" - ")) {
-            System.out.println("lol -");
-            board.get(lokation).setGraphic(" - ");
-            board.get(destination).setGraphic(" W ");
-            return true;
-        }
-        if(board.get(destination).isEndTile()) {
-            board.get(lokation).setGraphic(" - ");
-            board.get(destination).getPiece().setKing(true);
-//SPØRG BURHAN
-            return true;
+        if (board.get(destination).getGraphic().equals(" - ")) {
+            if (board.get(destination).isEndTile()) {
+                board.get(lokation).getPiece().setKing(true);
+                board.get(destination).setPiece(board.get(lokation).piece);
+                board.get(lokation).setPiece(null);
+                //SPØRG BURHAN
+            }
+            else {
+                System.out.println("lol -");
+                board.get(destination).setPiece(board.get(lokation).piece);
+                board.get(lokation).setPiece(null);
+            }
         }
 //        if (destination == (lokation - 9) || destination == (lokation - 7) || destination == (lokation + 9) || destination == (lokation + 7)) {
-            if (board.get(destination).getGraphic().equals(" B ")) {
-                if (destination == (lokation - 9)) {
-                    board.get(lokation).setGraphic(" - ");
-                    board.get(destination).setGraphic(" - ");
-                    destination -= 9;
-                    board.get(destination).setGraphic(" W ");
-                } else if (destination == (lokation - 7)) {
-                    board.get(lokation).setGraphic(" - ");
-                    board.get(destination).setGraphic(" - ");
-                    destination -= 7;
-                    board.get(destination).setGraphic(" W ");
-                } else if (destination == (lokation + 9)) {
-                    System.out.println("lol1");
-                    board.get(lokation).setGraphic(" - ");
-                    board.get(destination).setGraphic(" - ");
-                    board.get(destination+9).setGraphic(" W ");
-                } else if (destination == (lokation + 7)) {
-                    board.get(lokation).setGraphic(" - ");
-                    board.get(destination).setGraphic(" - ");
-                    destination += 7;
-                    board.get(destination).setGraphic(" W ");
-                }
-                return true;
+        if (board.get(destination).getGraphic().equals(" B ")) {
+            if (destination == (lokation - 9)) {
+                board.get(destination).setPiece(null);
+                destination -= 9;
+                board.get(destination).setPiece(board.get(lokation).piece);
+                board.get(lokation).setPiece(null);
+            } else if (destination == (lokation - 7)) {
+                board.get(destination).setPiece(null);
+                destination -= 7;
+                board.get(destination).setPiece(board.get(lokation).piece);
+                board.get(lokation).setPiece(null);
+            } else if (destination == (lokation + 9)) {
+                System.out.println("lol1");
+                board.get(destination).setPiece(null);
+                destination += 9;
+                board.get(destination).setPiece(board.get(lokation).piece);
+                board.get(lokation).setPiece(null);;
+            } else if (destination == (lokation + 7)) {
+                board.get(destination).setPiece(null);
+                destination += 7;
+                board.get(destination).setPiece(board.get(lokation).piece);
+                board.get(lokation).setPiece(null);
             }
-    //    }
-
-
-
-        return false;
+        }
     }
 
 
@@ -379,112 +349,112 @@ public class GameLogic {
 */
 
 
-        private int AlphaBeta ( int depth, ArrayList<Tile > moves,int alpha, int beta){
+    private int AlphaBeta(int depth, ArrayList<Tile> moves, int alpha, int beta) {
 
-            if (getWinner().equals("White")) {
-                int value = 0;
-                value -= 500 - depth;
-                return value;
+        if (getWinner().equals("White")) {
+            int value = 0;
+            value -= 500 - depth;
+            return value;
 
-            } else if (getWinner().equals("Black")) {
-                int value = 0;
-                value += 500 - depth;
-                return value;
+        } else if (getWinner().equals("Black")) {
+            int value = 0;
+            value += 500 - depth;
+            return value;
 
-            } else if (depth == MAX_DEPTH) {
-                int value = 0;
-                for (int i = 0; i < path.size(); i++) {
-                    if (path.get(i).getGraphic().equals("O")) {
-                        value += path.get(i).getPiece().getValue();
-                    } else if (path.get(i).getGraphic().equals("X")) {
-                        value -= path.get(i).getPiece().getValue();
-                    }
+        } else if (depth == MAX_DEPTH) {
+            int value = 0;
+            for (int i = 0; i < path.size(); i++) {
+                if (path.get(i).getGraphic().equals("O")) {
+                    value += path.get(i).getPiece().getValue();
+                } else if (path.get(i).getGraphic().equals("X")) {
+                    value -= path.get(i).getPiece().getValue();
                 }
-                return value;
             }
-
-
-            //kør det hele gennem med en liste over moves du kan lave, tag summen af de forskellige værdier hvor hver anden
-            // er et minus tal.
-            else if (depth == 0) {
-                int current_value;
-                int best_value = MIN;
-                for (Tile tile : board) {
-                    //System.out.println("tile pos" + tile.position);
-                    if (tile.getGraphic().equals("")) {
-                        tile.setGraphic("O");
-                        path.add(tile);
-                        //System.out.println("Tile pos: " + path.get(0).position);
-                        current_value = AlphaBeta(depth + 1, moves, alpha, beta);
-                        //System.out.println("C: "+ current_value);
-                        tile.setGraphic("");
-                        if (current_value > best_value) {
-                            best_value = current_value;
-                            moves.clear();
-                            moves.add(tile);
-                            //  System.out.println("moves: " + moves.get(0).position);
-                        }
-                        path.clear();
-                        //System.out.println(best_value);
-
-                    }
-                }
-
-            } else {
-
-                if (depth % 2 == 0) {
-                    int max = MIN;
-
-                    for (int i = 0; i < board.size(); i++) {
-                        if (board.get(i).graphic.equals("")) {
-                            board.get(i).setGraphic("O");
-                            int child_value = AlphaBeta(depth + 1, moves, alpha, beta);
-                            board.get(i).setGraphic("");
-                            max = Math.max(max, child_value);
-                            if (max > alpha) {
-                                alpha = max;
-                                if (path.size() < depth) {
-                                    path.add(board.get(i));
-                                } else {
-                                    path.remove(depth - 1);
-                                    path.add(board.get(i));
-                                }
-                            }
-                            if (alpha >= beta) {
-                                break;
-                            }
-                        }
-                    }
-                    return alpha;
-                } else {
-                    int min = MAX;
-                    for (int i = 0; i < board.size(); i++) {
-                        if (board.get(i).graphic.equals("")) {
-                            board.get(i).setGraphic("X");
-                            int child_value = AlphaBeta(depth + 1, moves, alpha, beta);
-                            board.get(i).setGraphic("");
-                            min = Math.min(min, child_value);
-                            if (min < beta) {
-                                beta = min;
-                                if (path.size() < depth) {
-                                    path.add(board.get(i));
-                                } else {
-                                    path.remove(depth - 1);
-                                    path.add(board.get(i));
-                                }
-                            }
-                            if (alpha >= beta) {
-                                break;
-                            }
-                        }
-                    }
-
-                    return beta;
-                }
-
-            }
-            return 0;
+            return value;
         }
+
+
+        //kør det hele gennem med en liste over moves du kan lave, tag summen af de forskellige værdier hvor hver anden
+        // er et minus tal.
+        else if (depth == 0) {
+            int current_value;
+            int best_value = MIN;
+            for (Tile tile : board) {
+                //System.out.println("tile pos" + tile.position);
+                if (tile.getGraphic().equals("")) {
+                    tile.setGraphic("O");
+                    path.add(tile);
+                    //System.out.println("Tile pos: " + path.get(0).position);
+                    current_value = AlphaBeta(depth + 1, moves, alpha, beta);
+                    //System.out.println("C: "+ current_value);
+                    tile.setGraphic("");
+                    if (current_value > best_value) {
+                        best_value = current_value;
+                        moves.clear();
+                        moves.add(tile);
+                        //  System.out.println("moves: " + moves.get(0).position);
+                    }
+                    path.clear();
+                    //System.out.println(best_value);
+
+                }
+            }
+
+        } else {
+
+            if (depth % 2 == 0) {
+                int max = MIN;
+
+                for (int i = 0; i < board.size(); i++) {
+                    if (board.get(i).graphic.equals("")) {
+                        board.get(i).setGraphic("O");
+                        int child_value = AlphaBeta(depth + 1, moves, alpha, beta);
+                        board.get(i).setGraphic("");
+                        max = Math.max(max, child_value);
+                        if (max > alpha) {
+                            alpha = max;
+                            if (path.size() < depth) {
+                                path.add(board.get(i));
+                            } else {
+                                path.remove(depth - 1);
+                                path.add(board.get(i));
+                            }
+                        }
+                        if (alpha >= beta) {
+                            break;
+                        }
+                    }
+                }
+                return alpha;
+            } else {
+                int min = MAX;
+                for (int i = 0; i < board.size(); i++) {
+                    if (board.get(i).graphic.equals("")) {
+                        board.get(i).setGraphic("X");
+                        int child_value = AlphaBeta(depth + 1, moves, alpha, beta);
+                        board.get(i).setGraphic("");
+                        min = Math.min(min, child_value);
+                        if (min < beta) {
+                            beta = min;
+                            if (path.size() < depth) {
+                                path.add(board.get(i));
+                            } else {
+                                path.remove(depth - 1);
+                                path.add(board.get(i));
+                            }
+                        }
+                        if (alpha >= beta) {
+                            break;
+                        }
+                    }
+                }
+
+                return beta;
+            }
+
+        }
+        return 0;
+    }
 
 
 }

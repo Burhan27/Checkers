@@ -136,12 +136,20 @@ private ArrayList<Tile> generateBoard() {
 
     }
 
-    private boolean checkSpecialMove(Piece piece, int destination) {
-        //TODO: check for diagonals for both kings and non-kings for special moves (Kills etc.)
-        /*
-        tjek distancen mellem destinationen og brikkens nuværende position.
-         */
-        return false;
+    private boolean checkSpecialMove(int start, int destination) {
+        int difference = start - destination;
+        int dest_X = destination % 8;
+        int dest_Y = destination / 8;
+        int real_dest_X = destination + difference % 8;
+        int real_dest_Y = destination + difference / 8;
+
+        if(real_dest_Y - 1 == dest_Y || real_dest_Y + 1 == dest_Y){
+            if(board.get(destination+difference).getGraphic().equals(" - ")){
+                return true;
+            }
+            else return false;
+        }
+        else return false;
     }
 
     private boolean checkNormalMove(int start, int destination) {
@@ -215,16 +223,13 @@ private ArrayList<Tile> generateBoard() {
                 board.get(lokation).getPiece().setKing(true);
                 board.get(destination).setPiece(board.get(lokation).piece);
                 board.get(lokation).setPiece(null);
-                //SPØRG BURHAN
             }
             else {
-                System.out.println("lol -");
                 board.get(destination).setPiece(board.get(lokation).piece);
                 board.get(lokation).setPiece(null);
             }
         }
-//        if (destination == (lokation - 9) || destination == (lokation - 7) || destination == (lokation + 9) || destination == (lokation + 7)) {
-        if (board.get(destination).getGraphic().equals(" B ")) {
+        if (!board.get(destination).getGraphic().equals(board.get(lokation).getGraphic())) {
             if (destination == (lokation - 9)) {
                 board.get(destination).setPiece(null);
                 destination -= 9;

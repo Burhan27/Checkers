@@ -6,8 +6,8 @@ public class GameLogic {
     ArrayList<Tile> board = new ArrayList<Tile>();
     final static int BOARD_SIZE = 64;
     Scanner keyboard = new Scanner(System.in);
-    ArrayList<Tile> path = new ArrayList<Tile>();
-    static int MAX_DEPTH = 5;
+    ArrayList<Tile> backupBoard = new ArrayList<Tile>();
+    static int MAX_DEPTH = 2;
     static int MAX = 1000;
     static int MIN = -1000;
 
@@ -140,8 +140,8 @@ public class GameLogic {
 
     }
 
-    private void updatePath() {
-        path = board;
+    private void backupBoard() {
+        backupBoard = board;
     }
 
     private boolean checkSpecialMove(int start, int destination) {
@@ -208,8 +208,10 @@ public class GameLogic {
     }
 
     private void pcturn() {
+        System.out.println("board kopnik");
+        backupBoard();
         int move[] = new int[2];
-        AlphaBeta(0, move, MIN, MAX);
+        AlphaBeta(0, move, board, MIN, MAX);
         placeMove(move[0], move[1]);
     }
 
@@ -285,14 +287,14 @@ public class GameLogic {
 
         } else {
             int value = 0;
-            for (int i = 0; i < path.size(); i++) {
-                if (path.get(i).getGraphic().equals(" B ")) {
+            for (int i = 0; i < backupBoard.size(); i++) {
+                if (backupBoard.get(i).getGraphic().equals(" B ")) {
                     value += 2;
-                } else if (path.get(i).getGraphic().equals(" W ")) {
+                } else if (backupBoard.get(i).getGraphic().equals(" W ")) {
                     value -= 2;
-                } else if (path.get(i).getGraphic().equals(" B K ")) {
+                } else if (backupBoard.get(i).getGraphic().equals(" B K ")) {
                     value += 10;
-                } else if (path.get(i).getGraphic().equals(" W K")) {
+                } else if (backupBoard.get(i).getGraphic().equals(" W K")) {
                     value -= 10;
                 }
             }
@@ -300,39 +302,44 @@ public class GameLogic {
         }
     }
 
-    private int AlphaBeta(int depth, int[] move, int alpha, int beta) {
+    private int AlphaBeta(int depth, int[] move, ArrayList<Tile> boardstate ,int alpha, int beta) {
         int nextmove;
         if (depth == MAX_DEPTH || isGameOver()) {
+            System.out.println("we evalutating");
             return stateEvaluation(depth);
         }
 
         //kør det hele gennem med en liste over moves du kan lave, tag summen af de forskellige værdier hvor hver anden
         // er et minus tal.
         else if (depth == 0) {
-            updatePath();
             int current_value;
             int best_value = MIN;
-            for (Tile tile : board) {
+            for (Tile tile : boardstate) {
                 if(tile.getPiece() != null) {
                     if (tile.getPiece().getGraphic() == " B " || tile.getPiece().getGraphic() == " B K") {
-                        if (checkNormalMove(board.indexOf(tile), board.indexOf(tile) + 7)) {
-                            nextmove = board.indexOf(tile) + 7;
-                            System.out.println(board.indexOf(tile)+"+7 =" + nextmove);
-                        } else if (checkNormalMove(board.indexOf(tile), board.indexOf(tile) + 9)) {
-                            nextmove = board.indexOf(tile) + 9;
-                            System.out.println(board.indexOf(tile)+"+9 =" + nextmove);
+                        if (checkNormalMove(boardstate.indexOf(tile), boardstate.indexOf(tile) + 7)) {
+                            nextmove = boardstate.indexOf(tile) + 7;
+                            System.out.println(boardstate.indexOf(tile)+"+7 =" + nextmove);
+                        } else if (checkNormalMove(boardstate.indexOf(tile), boardstate.indexOf(tile) + 9)) {
+                            nextmove = boardstate.indexOf(tile) + 9;
+                            System.out.println(boardstate.indexOf(tile)+"+9 =" + nextmove);
                         } else {
                             continue;
                         }
-                        placeMove(board.indexOf(tile), nextmove);
-                        current_value = AlphaBeta(depth + 1, move, alpha, beta);
+                        System.out.println("making the move");
+                        placeMove(boardstate.indexOf(tile), nextmove);
+                        System.out.println("move has been made");
+                        current_value = AlphaBeta(depth + 1, move, boardstate, alpha, beta);
                         if (current_value > best_value) {
+                            System.out.println("bombastic");
                             best_value = current_value;
-                            move[0] = board.indexOf(tile);
+                            move[0] = boardstate.indexOf(tile);
                             move[1] = nextmove;
                         }
-                        board.clear();
-                        board = path;
+                        System.out.println("resetting board");
+                        boardstate.clear();
+                        System.out.println("board reset");
+                        boardstate = backupBoard;
                     }
                     else continue;
                 }
@@ -342,49 +349,57 @@ public class GameLogic {
 
             if (depth % 2 == 0) {
                 int max = MIN;
-
-                for (Tile tile : board) {
+                ArrayList<Tile> currentState = boardstate;
+                for (Tile tile : boardstate) {
                     if (tile.getPiece() != null) {
                         if (tile.getPiece().getGraphic() == " B " || tile.getPiece().getGraphic() == " B K") {
-                            if (checkNormalMove(board.indexOf(tile), board.indexOf(tile) + 7)) {
-                                nextmove = board.indexOf(tile) + 7;
-                                System.out.println(board.indexOf(tile)+"+7 =" + nextmove);
-                            } else if (checkNormalMove(board.indexOf(tile), board.indexOf(tile) + 9)) {
-                                nextmove = board.indexOf(tile) + 9;
-                                System.out.println(board.indexOf(tile)+"+9 =" + nextmove);
+                            if (checkNormalMove(boardstate.indexOf(tile), boardstate.indexOf(tile) + 7)) {
+                                nextmove = boardstate.indexOf(tile) + 7;
+                                System.out.println(boardstate.indexOf(tile)+"+7 =" + nextmove);
+                            } else if (checkNormalMove(boardstate.indexOf(tile), boardstate.indexOf(tile) + 9)) {
+                                nextmove = boardstate.indexOf(tile) + 9;
+                                System.out.println(boardstate.indexOf(tile)+"+9 =" + nextmove);
                             } else {
                                 continue;
                             }
-                            placeMove(board.indexOf(tile), nextmove);
-                            int child_value = AlphaBeta(depth + 1, move, alpha, beta);
+                            System.out.println("making the move");
+                            placeMove(boardstate.indexOf(tile), nextmove);
+                            System.out.println("move has been made");
+                            int child_value = AlphaBeta(depth + 1, move, boardstate, alpha, beta);
                             max = Math.max(max, child_value);
+                            boardstate = currentState;
                             if (max > alpha) {
                                 alpha = max;
                             }
                             if (alpha >= beta) {
                                 break;
                             }
+
                         }
                     } else continue;
                 }
                 return alpha;
             } else {
                 int min = MAX;
-                for (Tile tile : board) {
+                ArrayList<Tile> currentState = boardstate;
+                for (Tile tile : boardstate) {
                     if (tile.getPiece() != null) {
                         if (tile.getPiece().getGraphic() == " W " || tile.getPiece().getGraphic() == " W K") {
-                            if (checkNormalMove(board.indexOf(tile), board.indexOf(tile) - 7)) {
-                                nextmove = board.indexOf(tile) - 7;
-                                System.out.println(board.indexOf(tile)+"-7 =" + nextmove);
-                            } else if (checkNormalMove(board.indexOf(tile), board.indexOf(tile) - 9)) {
-                                nextmove = board.indexOf(tile) - 9;
-                                System.out.println(board.indexOf(tile)+"-9 =" + nextmove);
+                            if (checkNormalMove(boardstate.indexOf(tile), boardstate.indexOf(tile) - 7)) {
+                                nextmove = boardstate.indexOf(tile) - 7;
+                                System.out.println(boardstate.indexOf(tile)+"-7 =" + nextmove);
+                            } else if (checkNormalMove(boardstate.indexOf(tile), boardstate.indexOf(tile) - 9)) {
+                                nextmove = boardstate.indexOf(tile) - 9;
+                                System.out.println(boardstate.indexOf(tile)+"-9 =" + nextmove);
                             } else {
                                 continue;
                             }
-                            placeMove(board.indexOf(tile), nextmove);
-                            int child_value = AlphaBeta(depth + 1, move, alpha, beta);
+                            System.out.println("making the move");
+                            placeMove(boardstate.indexOf(tile), nextmove);
+                            System.out.println("move has been made");
+                            int child_value = AlphaBeta(depth + 1, move, boardstate, alpha, beta);
                             min = Math.min(min, child_value);
+                            boardstate = currentState;
                             if (min < beta) {
                                 beta = min;
                             }

@@ -18,7 +18,7 @@ public class GameLogic {
         gameFlow();
     }
 
-private ArrayList<Tile> generateBoard() {
+    private ArrayList<Tile> generateBoard() {
         int row_count;
 
         for (int i = 0; i < BOARD_SIZE; i++) {
@@ -82,26 +82,30 @@ private ArrayList<Tile> generateBoard() {
         System.out.println("Tast koordinatet for den brik du gerne vil rykke");
         pieceW = keyboard.nextInt();
 
-        if(pieceW == 99){
+        if (pieceW == 99) {
             return;
-        }
-        else {
+        } else {
             while (!(board.get(pieceW).getGraphic() == " W ")) {
                 System.out.println("Tast rigtig koordinat");
                 pieceW = keyboard.nextInt();
             }
             System.out.println("Tast koordinatet for destination");
             moveW = keyboard.nextInt();
-            while (!(board.get(moveW).isDark)){
+            while (!(board.get(moveW).isDark)) {
                 System.out.println("Tast rigtig koordinat");
                 pieceW = keyboard.nextInt();
             }
             boolean ale = checkNormalMove(pieceW, moveW);
-            if(ale == true) {
+            if (ale == true) {
                 placeMove(pieceW, moveW);
-            }
-            else{
-                System.out.println("fuck dig ale");
+            } else {
+                while (ale == false) {
+                    System.out.println("Tast brik koordinat");
+                    pieceW = keyboard.nextInt();
+                    System.out.println("Tast destination");
+                    moveW = keyboard.nextInt();
+                }
+                placeMove(pieceW, moveW);
             }
         }
 
@@ -127,13 +131,17 @@ private ArrayList<Tile> generateBoard() {
         while (!isGameOver()) {
             turn++;
             if ((turn % 2) == 0) {
-                System.out.println("bote");
+                pcturn();
             } else {
                 playerTurn();
             }
             printBoard();
         }
 
+    }
+
+    private void updatePath() {
+        path = board;
     }
 
     private boolean checkSpecialMove(int start, int destination) {
@@ -143,22 +151,26 @@ private ArrayList<Tile> generateBoard() {
         int real_dest_X = destination + difference % 8;
         int real_dest_Y = destination + difference / 8;
 
-        if(real_dest_Y - 1 == dest_Y || real_dest_Y + 1 == dest_Y){
-            if(board.get(destination+difference).getGraphic().equals(" - ")){
+        if (real_dest_Y - 1 == dest_Y || real_dest_Y + 1 == dest_Y) {
+            if (board.get(destination + difference).getGraphic().equals(" - ")) {
                 return true;
-            }
-            else return false;
-        }
-        else return false;
+            } else return false;
+        } else return false;
     }
 
     private boolean checkNormalMove(int start, int destination) {
         Piece piece = board.get(start).getPiece();
-        System.out.println("PLACE: " + piece.placement);
 
         if (!board.get(destination).isDark) {
             return false;
-        } else {
+        }
+        else if(destination > 63){
+            return false;
+        }
+        else if(board.get(start).getGraphic().equals(board.get(destination).getGraphic())){
+            return false;
+        }
+        else {
             int dest_X = destination % 8;
             int dest_Y = destination / 8;
             int piece_X = start % 8;
@@ -195,6 +207,12 @@ private ArrayList<Tile> generateBoard() {
         return false;
     }
 
+    private void pcturn() {
+        int move[] = new int[2];
+        AlphaBeta(0, move, MIN, MAX);
+        placeMove(move[0], move[1]);
+    }
+
     private String getWinner() {
         int countW = 0, countB = 0;
 
@@ -223,8 +241,7 @@ private ArrayList<Tile> generateBoard() {
                 board.get(lokation).getPiece().setKing(true);
                 board.get(destination).setPiece(board.get(lokation).piece);
                 board.get(lokation).setPiece(null);
-            }
-            else {
+            } else {
                 board.get(destination).setPiece(board.get(lokation).piece);
                 board.get(lokation).setPiece(null);
             }
@@ -241,11 +258,11 @@ private ArrayList<Tile> generateBoard() {
                 board.get(destination).setPiece(board.get(lokation).piece);
                 board.get(lokation).setPiece(null);
             } else if (destination == (lokation + 9)) {
-                System.out.println("lol1");
                 board.get(destination).setPiece(null);
                 destination += 9;
                 board.get(destination).setPiece(board.get(lokation).piece);
-                board.get(lokation).setPiece(null);;
+                board.get(lokation).setPiece(null);
+                ;
             } else if (destination == (lokation + 7)) {
                 board.get(destination).setPiece(null);
                 destination += 7;
@@ -255,7 +272,7 @@ private ArrayList<Tile> generateBoard() {
         }
     }
 
-    private int stateEvaluation(int depth){
+    private int stateEvaluation(int depth) {
         if (getWinner().equals("White")) {
             int value = 0;
             value -= 500 - depth;
@@ -266,7 +283,7 @@ private ArrayList<Tile> generateBoard() {
             value += 500 - depth;
             return value;
 
-        } else{
+        } else {
             int value = 0;
             for (int i = 0; i < path.size(); i++) {
                 if (path.get(i).getGraphic().equals(" B ")) {
@@ -274,45 +291,50 @@ private ArrayList<Tile> generateBoard() {
                 } else if (path.get(i).getGraphic().equals(" W ")) {
                     value -= 2;
                 } else if (path.get(i).getGraphic().equals(" B K ")) {
-                    value += 4;
+                    value += 10;
                 } else if (path.get(i).getGraphic().equals(" W K")) {
-                    value -= 4;
+                    value -= 10;
                 }
             }
             return value;
         }
     }
 
-    private int AlphaBeta(int depth, ArrayList<Tile> moves, int alpha, int beta) {
-
+    private int AlphaBeta(int depth, int[] move, int alpha, int beta) {
+        int nextmove;
         if (depth == MAX_DEPTH || isGameOver()) {
             return stateEvaluation(depth);
         }
 
-
         //kør det hele gennem med en liste over moves du kan lave, tag summen af de forskellige værdier hvor hver anden
         // er et minus tal.
         else if (depth == 0) {
+            updatePath();
             int current_value;
             int best_value = MIN;
             for (Tile tile : board) {
-                //System.out.println("tile pos" + tile.position);
-                if (tile.getGraphic().equals("")) {
-                    tile.setGraphic("O");
-                    path.add(tile);
-                    //System.out.println("Tile pos: " + path.get(0).position);
-                    current_value = AlphaBeta(depth + 1, moves, alpha, beta);
-                    //System.out.println("C: "+ current_value);
-                    tile.setGraphic("");
-                    if (current_value > best_value) {
-                        best_value = current_value;
-                        moves.clear();
-                        moves.add(tile);
-                        //  System.out.println("moves: " + moves.get(0).position);
+                if(tile.getPiece() != null) {
+                    if (tile.getPiece().getGraphic() == " B " || tile.getPiece().getGraphic() == " B K") {
+                        if (checkNormalMove(board.indexOf(tile), board.indexOf(tile) + 7)) {
+                            nextmove = board.indexOf(tile) + 7;
+                            System.out.println(board.indexOf(tile)+"+7 =" + nextmove);
+                        } else if (checkNormalMove(board.indexOf(tile), board.indexOf(tile) + 9)) {
+                            nextmove = board.indexOf(tile) + 9;
+                            System.out.println(board.indexOf(tile)+"+9 =" + nextmove);
+                        } else {
+                            continue;
+                        }
+                        placeMove(board.indexOf(tile), nextmove);
+                        current_value = AlphaBeta(depth + 1, move, alpha, beta);
+                        if (current_value > best_value) {
+                            best_value = current_value;
+                            move[0] = board.indexOf(tile);
+                            move[1] = nextmove;
+                        }
+                        board.clear();
+                        board = path;
                     }
-                    path.clear();
-                    //System.out.println(best_value);
-
+                    else continue;
                 }
             }
 
@@ -321,48 +343,56 @@ private ArrayList<Tile> generateBoard() {
             if (depth % 2 == 0) {
                 int max = MIN;
 
-                for (int i = 0; i < board.size(); i++) {
-                    if (board.get(i).graphic.equals("")) {
-                        board.get(i).setGraphic("O");
-                        int child_value = AlphaBeta(depth + 1, moves, alpha, beta);
-                        board.get(i).setGraphic("");
-                        max = Math.max(max, child_value);
-                        if (max > alpha) {
-                            alpha = max;
-                            if (path.size() < depth) {
-                                path.add(board.get(i));
+                for (Tile tile : board) {
+                    if (tile.getPiece() != null) {
+                        if (tile.getPiece().getGraphic() == " B " || tile.getPiece().getGraphic() == " B K") {
+                            if (checkNormalMove(board.indexOf(tile), board.indexOf(tile) + 7)) {
+                                nextmove = board.indexOf(tile) + 7;
+                                System.out.println(board.indexOf(tile)+"+7 =" + nextmove);
+                            } else if (checkNormalMove(board.indexOf(tile), board.indexOf(tile) + 9)) {
+                                nextmove = board.indexOf(tile) + 9;
+                                System.out.println(board.indexOf(tile)+"+9 =" + nextmove);
                             } else {
-                                path.remove(depth - 1);
-                                path.add(board.get(i));
+                                continue;
+                            }
+                            placeMove(board.indexOf(tile), nextmove);
+                            int child_value = AlphaBeta(depth + 1, move, alpha, beta);
+                            max = Math.max(max, child_value);
+                            if (max > alpha) {
+                                alpha = max;
+                            }
+                            if (alpha >= beta) {
+                                break;
                             }
                         }
-                        if (alpha >= beta) {
-                            break;
-                        }
-                    }
+                    } else continue;
                 }
                 return alpha;
             } else {
                 int min = MAX;
-                for (int i = 0; i < board.size(); i++) {
-                    if (board.get(i).graphic.equals("")) {
-                        board.get(i).setGraphic("X");
-                        int child_value = AlphaBeta(depth + 1, moves, alpha, beta);
-                        board.get(i).setGraphic("");
-                        min = Math.min(min, child_value);
-                        if (min < beta) {
-                            beta = min;
-                            if (path.size() < depth) {
-                                path.add(board.get(i));
+                for (Tile tile : board) {
+                    if (tile.getPiece() != null) {
+                        if (tile.getPiece().getGraphic() == " W " || tile.getPiece().getGraphic() == " W K") {
+                            if (checkNormalMove(board.indexOf(tile), board.indexOf(tile) - 7)) {
+                                nextmove = board.indexOf(tile) - 7;
+                                System.out.println(board.indexOf(tile)+"-7 =" + nextmove);
+                            } else if (checkNormalMove(board.indexOf(tile), board.indexOf(tile) - 9)) {
+                                nextmove = board.indexOf(tile) - 9;
+                                System.out.println(board.indexOf(tile)+"-9 =" + nextmove);
                             } else {
-                                path.remove(depth - 1);
-                                path.add(board.get(i));
+                                continue;
+                            }
+                            placeMove(board.indexOf(tile), nextmove);
+                            int child_value = AlphaBeta(depth + 1, move, alpha, beta);
+                            min = Math.min(min, child_value);
+                            if (min < beta) {
+                                beta = min;
+                            }
+                            if (alpha >= beta) {
+                                break;
                             }
                         }
-                        if (alpha >= beta) {
-                            break;
-                        }
-                    }
+                    } else continue;
                 }
 
                 return beta;

@@ -7,6 +7,7 @@ public class GameLogic {
     final static int BOARD_SIZE = 64;
     Scanner keyboard = new Scanner(System.in);
     ArrayList<Tile> backupBoard = new ArrayList<Tile>();
+    ArrayList<Tile> backupBoard2 = new ArrayList<Tile>();
     static int MAX_DEPTH = 2;
     static int MAX = 1000;
     static int MIN = -1000;
@@ -141,7 +142,7 @@ public class GameLogic {
     }
 
     private void backupBoard() {
-        backupBoard = board;
+       backupBoard.addAll(board);
     }
 
     private boolean checkSpecialMove(int start, int destination) {
@@ -151,7 +152,7 @@ public class GameLogic {
         int real_dest_X = destination + difference % 8;
         int real_dest_Y = destination + difference / 8;
 
-        if (real_dest_Y - 1 == dest_Y || real_dest_Y + 1 == dest_Y) {
+        if ((real_dest_Y - 1 == dest_Y || real_dest_Y + 1 == dest_Y) && (real_dest_X - 1 == dest_X || real_dest_X + 1 == dest_X )) {
             if (board.get(destination + difference).getGraphic().equals(" - ")) {
                 return true;
             } else return false;
@@ -159,10 +160,17 @@ public class GameLogic {
     }
 
     private boolean checkNormalMove(int start, int destination) {
+        System.out.println("lol " + start + " lol " + destination);
         Piece piece = board.get(start).getPiece();
 
         if (!board.get(destination).isDark) {
             return false;
+        }
+        else if (board.get(destination).getPiece().getGraphic().equals(" W ") && !board.get(start).getPiece().getGraphic().equals(" W ")) {
+            return checkSpecialMove(start, destination);
+        }
+        else if (board.get(destination).getPiece().getGraphic().equals(" B ") && !board.get(start).getPiece().getGraphic().equals(" B ")) {
+            return checkSpecialMove(start, destination);
         }
         else if(destination > 63){
             return false;
@@ -238,6 +246,8 @@ public class GameLogic {
 
     private void placeMove(int lokation, int destination) {
 
+        System.out.println(board.size());
+        System.out.println(destination + " hee");
         if (board.get(destination).getGraphic().equals(" - ")) {
             if (board.get(destination).isEndTile()) {
                 board.get(lokation).getPiece().setKing(true);
@@ -314,32 +324,41 @@ public class GameLogic {
         else if (depth == 0) {
             int current_value;
             int best_value = MIN;
-            for (Tile tile : boardstate) {
-                if(tile.getPiece() != null) {
-                    if (tile.getPiece().getGraphic() == " B " || tile.getPiece().getGraphic() == " B K") {
-                        if (checkNormalMove(boardstate.indexOf(tile), boardstate.indexOf(tile) + 7)) {
-                            nextmove = boardstate.indexOf(tile) + 7;
-                            System.out.println(boardstate.indexOf(tile)+"+7 =" + nextmove);
-                        } else if (checkNormalMove(boardstate.indexOf(tile), boardstate.indexOf(tile) + 9)) {
-                            nextmove = boardstate.indexOf(tile) + 9;
-                            System.out.println(boardstate.indexOf(tile)+"+9 =" + nextmove);
+            for(int i = 0; i < boardstate.size(); i++) {
+                if(boardstate.get(i).getPiece() != null) {
+                    if (boardstate.get(i).getPiece().getGraphic() == " B " || boardstate.get(i).getGraphic() == " B K") {
+                        if (checkNormalMove(i, i + 7)) {
+                            nextmove = i + 7;
+                            System.out.println(boardstate.indexOf(i)+"+7 =" + nextmove);
+                        } else if (checkNormalMove(i, i + 9)) {
+                            nextmove = i + 9;
+                            System.out.println(boardstate.indexOf(i)+"+9 =" + nextmove);
                         } else {
                             continue;
                         }
                         System.out.println("making the move");
-                        placeMove(boardstate.indexOf(tile), nextmove);
+                        placeMove(i, nextmove);
                         System.out.println("move has been made");
                         current_value = AlphaBeta(depth + 1, move, boardstate, alpha, beta);
                         if (current_value > best_value) {
                             System.out.println("bombastic");
                             best_value = current_value;
-                            move[0] = boardstate.indexOf(tile);
+                            move[0] = i;
                             move[1] = nextmove;
                         }
+                        System.out.println(backupBoard.size() + "backup");
                         System.out.println("resetting board");
+                  //      backupBoard2 = backupBoard;
                         boardstate.clear();
+                  //      boardstate.remove(i);
+                        System.out.println(backupBoard.size() + "backup");
+                   //     System.out.println(backupBoard2.size() + "backup2");
+
                         System.out.println("board reset");
-                        boardstate = backupBoard;
+                        boardstate.addAll(backupBoard);
+                        board.clear();
+                        board.addAll(backupBoard);
+                        System.out.println(boardstate.size() + " boardstate size");
                     }
                     else continue;
                 }
@@ -349,25 +368,29 @@ public class GameLogic {
 
             if (depth % 2 == 0) {
                 int max = MIN;
-                ArrayList<Tile> currentState = boardstate;
-                for (Tile tile : boardstate) {
-                    if (tile.getPiece() != null) {
-                        if (tile.getPiece().getGraphic() == " B " || tile.getPiece().getGraphic() == " B K") {
-                            if (checkNormalMove(boardstate.indexOf(tile), boardstate.indexOf(tile) + 7)) {
-                                nextmove = boardstate.indexOf(tile) + 7;
-                                System.out.println(boardstate.indexOf(tile)+"+7 =" + nextmove);
-                            } else if (checkNormalMove(boardstate.indexOf(tile), boardstate.indexOf(tile) + 9)) {
-                                nextmove = boardstate.indexOf(tile) + 9;
-                                System.out.println(boardstate.indexOf(tile)+"+9 =" + nextmove);
+                ArrayList<Tile> currentState = new ArrayList<>();
+                currentState.addAll(boardstate);
+            //    for (Tile tile : boardstate) {
+                    for(int i = 0; i < boardstate.size(); i++) {
+                    if (boardstate.get(i).getPiece() != null) {
+                        if (boardstate.get(i).getGraphic() == " B " || boardstate.get(i).getGraphic() == " B K") {
+                            if (checkNormalMove(i, i + 7)) {
+                                nextmove = i + 7;
+                                System.out.println(boardstate.indexOf(i)+"+7 =" + nextmove);
+                            } else if (checkNormalMove(i, i + 9)) {
+                                nextmove = i + 9;
+                                System.out.println(boardstate.indexOf(i)+"+9 =" + nextmove);
                             } else {
                                 continue;
                             }
                             System.out.println("making the move");
-                            placeMove(boardstate.indexOf(tile), nextmove);
+                            placeMove(i, nextmove);
                             System.out.println("move has been made");
                             int child_value = AlphaBeta(depth + 1, move, boardstate, alpha, beta);
                             max = Math.max(max, child_value);
-                            boardstate = currentState;
+                            boardstate.clear();
+                            boardstate.addAll(currentState);
+
                             if (max > alpha) {
                                 alpha = max;
                             }
@@ -381,25 +404,27 @@ public class GameLogic {
                 return alpha;
             } else {
                 int min = MAX;
-                ArrayList<Tile> currentState = boardstate;
-                for (Tile tile : boardstate) {
-                    if (tile.getPiece() != null) {
-                        if (tile.getPiece().getGraphic() == " W " || tile.getPiece().getGraphic() == " W K") {
-                            if (checkNormalMove(boardstate.indexOf(tile), boardstate.indexOf(tile) - 7)) {
-                                nextmove = boardstate.indexOf(tile) - 7;
-                                System.out.println(boardstate.indexOf(tile)+"-7 =" + nextmove);
-                            } else if (checkNormalMove(boardstate.indexOf(tile), boardstate.indexOf(tile) - 9)) {
-                                nextmove = boardstate.indexOf(tile) - 9;
-                                System.out.println(boardstate.indexOf(tile)+"-9 =" + nextmove);
+                ArrayList<Tile> currentState = new ArrayList<>();
+                currentState.addAll(boardstate);
+                for(int i = 0; i < boardstate.size(); i++) {
+                    if (boardstate.get(i).getPiece() != null) {
+                        if (boardstate.get(i).getPiece().getGraphic() == " W " || boardstate.get(i).getPiece().getGraphic() == " W K") {
+                            if (checkNormalMove(i, i - 7)) {
+                                nextmove = i - 7;
+                                System.out.println(boardstate.indexOf(i)+"-7 =" + nextmove);
+                            } else if (checkNormalMove(i, i - 9)) {
+                                nextmove = i - 9;
+                                System.out.println(boardstate.indexOf(i)+"-9 =" + nextmove);
                             } else {
                                 continue;
                             }
-                            System.out.println("making the move");
-                            placeMove(boardstate.indexOf(tile), nextmove);
+                            System.out.println("making the move" + i);
+                            placeMove(i, nextmove);
                             System.out.println("move has been made");
                             int child_value = AlphaBeta(depth + 1, move, boardstate, alpha, beta);
                             min = Math.min(min, child_value);
-                            boardstate = currentState;
+                            boardstate.clear();
+                            boardstate.addAll(currentState);
                             if (min < beta) {
                                 beta = min;
                             }

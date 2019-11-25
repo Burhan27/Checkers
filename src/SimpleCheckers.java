@@ -11,8 +11,8 @@ public class SimpleCheckers {
 
         String[][] board = {
                 {"-", "b", "-", "b", "-", "b", "-", "b"},
-                {"b", "-", "b", "-", "b", "-", "b", "-"},
-                {"-", "b", "-", "bk", "-", "b", "-", "b"},
+                {"b", "-", "b", "-", "bk", "-", "b", "-"},
+                {"-", "b", "-", "w", "-", "b", "-", "b"},
                 {"-", "-", "-", "-", "-", "-", "-", "-"},
                 {"-", "b", "-", "-", "-", "-", "-", "-"},
                 {"w", "-", "w", "-", "w", "-", "w", "-"},
@@ -21,13 +21,15 @@ public class SimpleCheckers {
         };
 
         System.out.println(board[5][0] + " and " + board[4][1]);
-        System.out.println("TYPE IS " + checkMove(5, 0, 4, 1, board));
-        int[]moves = getPossibleMoves(2,1,board);
-        System.out.println("possibluy moves for 'b'= " + moves[0] +" " + moves[3] );
-        moves = getPossibleMoves(5,0,board);
-        System.out.println("possibluey moves for 'w' = " + moves[0] +" " + moves[3]);
-        moves = getPossibleMoves(2,3,board);
-        System.out.println("plavesdeble movesv for 'K' =" + moves[0] +" " + moves[3]);
+        System.out.println("TYPE IS " + checkMove(2, 3, 1, 4, board));
+        int[] moves = getPossibleMoves(2, 1, board);
+        System.out.println("possibluy moves for 'b'= " + moves[0] + " " + moves[3]);
+        moves = getPossibleMoves(5, 0, board);
+        System.out.println("possibluey moves for 'w' = " + moves[0] + " " + moves[3]);
+        moves = getPossibleMoves(2, 3, board);
+        System.out.println("plavesdeble movesv for 'K' =" + moves[0] + " " + moves[3]);
+
+        System.out.println("java exksepirment  " + "wk".contains("b"));
         //gameLogic(board);
 
     }
@@ -105,26 +107,78 @@ public class SimpleCheckers {
     }
 
 
-    static private String getWinner(){
-
+    static private String getWinner(String[][] board) {
+        int wcount = 0;
+        int bcount = 0;
+        for(int y = 0; y < board.length; y++){
+            for(int x = 0; x < board[y].length; x++){
+                if(board[y][x].contains("w")){
+                    wcount++;
+                }
+                else if(board[y][x].contains("b")){
+                    bcount++;
+                }
+                else continue;
+            }
+        }
+        if(bcount == 0){
+            return "w";
+        }
+        else if(wcount == 0){
+            return "b";
+        }
+        else return "NA";
     }
 
     static private MoveType checkMove(int y, int x, int y2, int x2, String[][] board) {
-        MoveType moveType = MoveType.NoMove;
+        MoveType moveType = MoveType.Illegal;
 
-        if (board[y][x].equals(board[y2][x2])) {
-            moveType = MoveType.Illegal;
-        } else if (board[y2][x2].equals("-")) {
-            moveType = MoveType.Standard;
-        } else if (board[y2][x2].equals("w") || board[y2][x2].equals("b")) {
-            int dx =x2 + (x2 - x);
-            int dy = y + (y2 - y);
-            if(dx  < 8 || dy  < 8){
-                if (board[dx][dy].equals("-")) {
-                    moveType = MoveType.Kill;
+        if (board[y][x].contains("k")) {
+            if (board[y][x].contains(board[y2][x2])) {
+                moveType = MoveType.KingIllegal;
+            } else if (board[y2][x2].equals("-")) {
+                moveType = MoveType.KingStandard;
+            } else if (!board[y][x].contains(board[y2][x2]) && !board[y2][x2].equals("-")) {
+                int dx = x2 + (x2 - x);
+                int dy = y + (y2 - y);
+                if (dx < 8 || dy < 8) {
+                    if (board[dx][dy].equals("-")) {
+                        if(board[y2][x2].contains("k")){
+                            moveType = MoveType.KingSlay;
+                        }
+                        else moveType = MoveType.Kill;
+                    }
                 }
-            }
-        }else moveType = MoveType.Illegal;
+            } else moveType = MoveType.KingIllegal;
+
+        } else {
+            if (board[y2][x2].contains(board[y][x]) || board[y][x].contains(board[y2][x2])) {
+                System.out.println("illegae");
+                moveType = MoveType.Illegal;
+            } else if (board[y2][x2].equals("-")) {
+                if((y2==0 && board[y][x].equals("w")) ||(y2==7 && board[y][x].equals("b")) ){
+                    moveType = MoveType.CrownKing;
+                }
+               else moveType = MoveType.Standard;
+            } else if (!board[y2][x2].equals("-")) {
+                int dx = x2 + (x2 - x);
+                int dy = y2 + (y2 - y);
+                if (dx < 8 || dy < 8) {
+                    if (board[dy][dx].equals("-")) {
+                        if((dy==0 && board[y][x].equals("w")) || (dy==7 && board[y][x].equals("b")) ){
+                            if(board[y2][x2].contains("k")){
+                                moveType = MoveType.CrownKingSlay;
+                            }
+                            else moveType = MoveType.CrownKingKill;
+                        }
+                        else if(board[y2][x2].contains("k")){
+                            moveType = MoveType.KingSlay;
+                        }
+                        else moveType = MoveType.Kill;
+                    }
+                }
+            } else moveType = MoveType.Illegal;
+        }
 
         return moveType;
     }
@@ -162,14 +216,12 @@ public class SimpleCheckers {
             moves[1] = 2;
             moves[2] = 3;
             moves[3] = 4;
-        }
-        else if (board[y][x].equals("w")){
+        } else if (board[y][x].equals("w")) {
             moves[0] = 1;
             moves[1] = 2;
             moves[2] = -1;
             moves[3] = -1;
-        }
-        else{
+        } else {
             moves[0] = -1;
             moves[1] = -1;
             moves[2] = -1;

@@ -7,21 +7,34 @@ public class SimpleCheckers {
     static int MAX_DEPTH = 2;
     static int MAX = 1000;
     static int MIN = -1000;
+    static int[] path = new int[5];
 
     public static void main(String[] args) {
 
         String[][] board = {
                 {"-", "b", "-", "b", "-", "b", "-", "b"},
-                {"b", "-", "b", "-", "bk", "-", "b", "-"},
-                {"-", "b", "-", "w", "-", "b", "-", "b"},
+                {"b", "-", "b", "-", "b", "-", "b", "-"},
+                {"-", "b", "-", "b", "-", "b", "-", "b"},
                 {"-", "-", "-", "-", "-", "-", "-", "-"},
-                {"-", "b", "-", "-", "-", "-", "-", "-"},
+                {"-", "-", "-", "-", "-", "-", "-", "-"},
                 {"w", "-", "w", "-", "w", "-", "w", "-"},
                 {"-", "w", "-", "w", "-", "w", "-", "w"},
                 {"w", "-", "w", "-", "w", "-", "w", "-"}
         };
 
-        System.out.println(board[5][0] + " and " + board[4][1]);
+        String[][] board2 = {
+                {"-", "-", "-", "-", "-", "-", "-", "-"},
+                {"-", "-", "-", "-", "-", "-", "-", "-"},
+                {"-", "-", "-", "-", "-", "-", "-", "-"},
+                {"-", "-", "-", "-", "-", "-", "-", "-"},
+                {"-", "-", "-", "-", "-", "-", "-", "-"},
+                {"-", "-", "-", "-", "b", "-", "-", "-"},
+                {"-", "b", "-", "w", "-", "-", "-", "w"},
+                {"-", "-", "-", "-", "-", "-", "-", "-"}
+        };
+
+
+      /*  System.out.println(board[5][0] + " and " + board[4][1]);
         System.out.println("TYPE IS " + checkMove(2, 3, 1, 4, board));
         int[] moves = getPossibleMoves(2, 1, board);
         System.out.println("possibluy moves for 'b'= " + moves[0] + " " + moves[3]);
@@ -30,8 +43,8 @@ public class SimpleCheckers {
         moves = getPossibleMoves(2, 3, board);
         System.out.println("plavesdeble movesv for 'K' =" + moves[0] + " " + moves[3]);
 
-        System.out.println("java exksepirment  " + "wk".contains("b"));
-        //gameLogic(board);
+        System.out.println("java exksepirment  " + "wk".contains("b"));*/
+        gameLogic(board2);
 
     }
 
@@ -58,7 +71,8 @@ public class SimpleCheckers {
         while (1 > 0) {
             turn++;
             if ((turn % 2) == 0) {
-                System.out.println("bote");
+                pcTurn(board);
+                printBoard(board);
             } else {
                 System.out.print("Tast en y værdi og så en x værdi");
                 boardinputY = scanner.nextInt();
@@ -172,7 +186,6 @@ public class SimpleCheckers {
         MoveType moveType = MoveType.Illegal;
 
         if(y2 < 0 || y2 > 7 || x2 < 0 || x2 > 7) {
-            System.out.println("test");
             return moveType;
         }
 
@@ -183,9 +196,11 @@ public class SimpleCheckers {
                 moveType = MoveType.KingStandard;
             } else if (!board[y][x].contains(board[y2][x2]) && !board[y2][x2].equals("-")) {
                 int dx = x2 + (x2 - x);
-                int dy = y + (y2 - y);
-                if (dx < 8 || dy < 8) {
-                    if (board[dx][dy].equals("-")) {
+                System.out.println("dx "+ dx);
+                int dy = y2 + (y2 - y);
+                System.out.println("dy " + dy);
+                if (dx < 8 || dy < 8 || dx > -1 || dy > -1) {
+                    if (board[dy][dx].equals("-")) {
                         if(board[y2][x2].contains("k")){
                             moveType = MoveType.KingSlay;
                         }
@@ -196,7 +211,6 @@ public class SimpleCheckers {
 
         } else {
             if (board[y2][x2].contains(board[y][x]) || board[y][x].contains(board[y2][x2])) {
-                System.out.println("illegae");
                 moveType = MoveType.Illegal;
             } else if (board[y2][x2].equals("-")) {
                 if((y2==0 && board[y][x].equals("w")) ||(y2==7 && board[y][x].equals("b")) ){
@@ -227,23 +241,46 @@ public class SimpleCheckers {
     }
 
 
-    //Alen Tjek, dont worry about it right now
-    boolean checkLegalMove(int x1, int y1, int x2, int y2, String[][] board) {
-        if (board[x1][y1].equals("w") || board[x1][y1].contains("k")) {
-            if (board[x1 + 1][x2 + 1].equals(board[x2][y2])) {
-                if (board[x2][y2].equals("-")) {
-                    return true;
-                } else if ((board[x2][y2].equals("b"))) {
-                    if (board[x2 + 1][y2 + 1].equals("-")) {
-                        return true;
-                    } else {
-                        return false;
+    static private int[] checkLegalMove(int y, int x, String[][] board) {
+        int[] moves = getPossibleMoves(y,x,board);
+        MoveType moveType;
+        int illegal_count = 0;
+        for(int i = 0; i < moves.length; i++){
+            if(moves[i] != -1){
+                if(moves[i] == 1){
+                    moveType= checkMove(y,x,y-1,x-1,board);
+                    if(moveType.equals(MoveType.Illegal) || moveType.equals(MoveType.KingIllegal)){
+                        moves[i] = -1;
                     }
+                    else continue;
+                }else if(moves[i] == 2){
+                    moveType= checkMove(y,x,y-1,x+1,board);
+                    if(moveType.equals(MoveType.Illegal) || moveType.equals(MoveType.KingIllegal)){
+                        moves[i] = -1;
+                    }
+                    else continue;
+                }else if(moves[i] == 3){
+                    moveType= checkMove(y,x,y+1,x-1,board);
+                    if(moveType.equals(MoveType.Illegal) || moveType.equals(MoveType.KingIllegal)){
+                        moves[i] = -1;
+                    }
+                    else continue;
+                }else if(moves[i] == 4){
+                    moveType= checkMove(y,x,y-1,x-1,board);
+                    if(moveType.equals(MoveType.Illegal) || moveType.equals(MoveType.KingIllegal)){
+                        moves[i] = -1;
+                    }
+                    else continue;
                 }
-
+            }
+            if(moves[i] == -1){
+                illegal_count++;
+                if(illegal_count == 4){
+                    moves[0] = 0;
+                }
             }
         }
-        return false;
+        return moves;
     }
 
 
@@ -620,5 +657,198 @@ public class SimpleCheckers {
             }
             return value;
         }
+    }
+
+    static private void pcTurn(String[][] board){
+        ArrayList<MoveType> moves = new ArrayList<MoveType>();
+        alpharBeta(0,moves,MIN,MAX,board);
+        MoveType moveType = checkMove(path[0],path[1],path[2],path[3],board);
+        System.out.println("BOTE DO " + moveType);
+        System.out.println("BOTE GO TO y: " + path[2] + " x: " + path[3]);
+        placeMove(path[0],path[1],path[2],path[3],board ,moveType,path[4]);
+    }
+
+    static private int alpharBeta(int depth, ArrayList<MoveType> moves, int alpha, int beta, String[][] board){
+
+        if(depth == MAX_DEPTH){
+            return stateEvaluation(moves,depth,board);
+        }
+
+        //kør det hele gennem med en liste over moves du kan lave, tag summen af de forskellige værdier hvor hver anden
+        // er et minus tal.
+        else if(depth == 0){
+            int current_value;
+            int best_value = MIN;
+            for(int y = 0; y < board.length; y++){
+                for (int x = 0; x < board[y].length; x++){
+                    if(board[y][x].contains("b")) {
+                        int[] directions = checkLegalMove(y, x, board);
+                        if (directions[0] == 0) {
+                            continue;
+                        } else {
+                            for (int i = 0; i < directions.length; i++) {
+                                if (directions[i] == -1) {
+                                    continue;
+                                } else {
+                                    int x2 = 0;
+                                    int y2 = 0;
+                                    if(directions[i] == 1){
+                                        y2=y-1;
+                                        x2=x-1;
+                                    } else if(directions[i] == 2){
+                                        y2=y-1;
+                                        x2=x+1;
+                                    }else if(directions[i] == 3){
+                                        y2=y+1;
+                                        x2=x-1;
+                                    } else if(directions[i] == 4){
+                                        y2=y+1;
+                                        x2=x+1;
+                                    }
+                                    MoveType moveType = checkMove(y,x,y2,x2,board);
+                                    if(moveType == MoveType.Illegal || moveType == MoveType.KingIllegal ){
+                                        moves.clear();
+                                        continue;
+                                    }
+                                    moves.add(moveType);
+                                    placeMove(y,x,y2,x2,board,moveType,directions[i]);
+                                    current_value = alpharBeta(depth+1,moves,alpha,beta,board);
+                                    undoPlaceMove(y,x,y2,x2,board,moveType,directions[i]);
+                                    if(current_value > best_value){
+                                        best_value = current_value;
+                                        path[0] = y;
+                                        path[1] = x;
+                                        path[2] = y2;
+                                        path[3] = x2;
+                                        path[4] = directions[i];
+                                    }
+                                    moves.clear();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        else {
+
+            if (depth % 2 == 0) {
+                int max = MIN;
+
+                for(int y = 0; y < board.length; y++){
+                    for (int x = 0; x < board[y].length; x++){
+                        if(board[y][x].contains("b")) {
+                            int[] directions = checkLegalMove(y, x, board);
+                            if (directions[0] == 0) {
+                                continue;
+                            } else {
+                                for (int i = 0; i < directions.length; i++) {
+                                    if (directions[i] == -1) {
+                                        continue;
+                                    } else {
+                                        int x2 = 0;
+                                        int y2 = 0;
+                                        if(directions[i] == 1){
+                                            y2=y-1;
+                                            x2=x-1;
+                                        } else if(directions[i] == 2){
+                                            y2=y-1;
+                                            x2=x+1;
+                                        }else if(directions[i] == 3){
+                                            y2=y+1;
+                                            x2=x-1;
+                                        } else if(directions[i] == 4){
+                                            y2=y+1;
+                                            x2=x+1;
+                                        }
+                                        MoveType moveType = checkMove(y,x,y2,x2,board);
+                                        moves.add(moveType);
+                                        placeMove(y,x,y2,x2,board,moveType,directions[i]);
+                                        int child_value = alpharBeta(depth+1,moves,alpha,beta,board);
+                                        undoPlaceMove(y,x,y2,x2,board,moveType,directions[i]);
+                                        max = Math.max(max,child_value);
+                                        if(max > alpha){
+                                            alpha = max;
+                                            if(moves.size() < depth){
+                                                moves.add(moveType);
+                                            }
+                                            else {
+                                                moves.remove(depth-1);
+                                                moves.add(moveType);
+                                            }
+                                            if(alpha > beta){
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                return alpha;
+            }
+
+            else {
+                int min = MAX;
+
+                for(int y = 0; y < board.length; y++){
+                    for (int x = 0; x < board[y].length; x++){
+                        if(board[y][x].contains("w")) {
+                            int[] directions = checkLegalMove(y, x, board);
+                            if (directions[0] == 0) {
+                                continue;
+                            } else {
+                                for (int i = 0; i < directions.length; i++) {
+                                    if (directions[i] == -1) {
+                                        continue;
+                                    } else {
+                                        int x2 = 0;
+                                        int y2 = 0;
+                                        if(directions[i] == 1){
+                                            y2=y-1;
+                                            x2=x-1;
+                                        } else if(directions[i] == 2){
+                                            y2=y-1;
+                                            x2=x+1;
+                                        }else if(directions[i] == 3){
+                                            y2=y+1;
+                                            x2=x-1;
+                                        } else if(directions[i] == 4){
+                                            y2=y+1;
+                                            x2=x+1;
+                                        }
+                                        MoveType moveType = checkMove(y,x,y2,x2,board);
+                                        moves.add(moveType);
+                                        placeMove(y,x,y2,x2,board,moveType,directions[i]);
+                                        int child_value = alpharBeta(depth+1,moves,alpha,beta,board);
+                                        undoPlaceMove(y,x,y2,x2,board,moveType,directions[i]);
+                                        min = Math.min(min,child_value);
+                                        if(min > beta){
+                                            beta = min;
+                                            if(moves.size() < depth){
+                                                moves.add(moveType);
+                                            }
+                                            else {
+                                                moves.remove(depth-1);
+                                                moves.add(moveType);
+                                            }
+                                            if(alpha > beta){
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                return beta;
+            }
+
+        }
+        return 0;
+
     }
 }

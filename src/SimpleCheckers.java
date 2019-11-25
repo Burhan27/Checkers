@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 
@@ -524,6 +525,58 @@ public class SimpleCheckers {
         return board;
     }
 
+    static private int stateEvaluation(ArrayList<MoveType> moves, int depth, String[][] board) {
+        if (getWinner(board).equals("w")) {
+            int value = 0;
+            value -= 500 - depth;
+            return value;
 
+        } else if (getWinner(board).equals("b")) {
+            int value = 0;
+            value += 500 - depth;
+            return value;
 
+        } else {
+            int value = 0;
+            for (int i = 0; i < moves.size(); i++) {
+                if(i%2 == 0){
+                    if(moves.get(i).equals(MoveType.KingStandard) || moves.get(i).equals(MoveType.Standard)){
+                        value += 1;
+                    }
+                    else if(moves.get(i).equals(MoveType.Kill)){
+                        value +=5;
+                    }
+                    else if(moves.get(i).equals(MoveType.KingSlay)){
+                        value += 10;
+                    }
+                    else if(moves.get(i).equals(MoveType.CrownKing)){
+                        value += 12;
+                    }
+                    else if(moves.get(i).equals(MoveType.CrownKingSlay)){
+                        value += 22;
+                    }
+                    else if(moves.get(i).equals(MoveType.CrownKingKill)){
+                        value += 17;
+                    }
+                } else {
+                    if(i%2 == 0) {
+                        if (moves.get(i).equals(MoveType.KingStandard) || moves.get(i).equals(MoveType.Standard)) {
+                            value -= 1;
+                        } else if (moves.get(i).equals(MoveType.Kill)) {
+                            value -= 5;
+                        } else if (moves.get(i).equals(MoveType.KingSlay)) {
+                            value -= 10;
+                        } else if (moves.get(i).equals(MoveType.CrownKing)) {
+                            value -= 12;
+                        } else if (moves.get(i).equals(MoveType.CrownKingSlay)) {
+                            value -= 22;
+                        } else if (moves.get(i).equals(MoveType.CrownKingKill)) {
+                            value -= 17;
+                        }
+                    }
+                }
+            }
+            return value;
+        }
+    }
 }

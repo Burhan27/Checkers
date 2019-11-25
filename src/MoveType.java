@@ -2,5 +2,6 @@ public enum MoveType {
 
     Kill,
     Standard,
-    illegal,
+    Illegal,
+    KingMove,
 }

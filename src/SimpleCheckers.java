@@ -78,7 +78,7 @@ public class SimpleCheckers {
                     moveinputX = scanner.nextInt();
                     moveinputY = scanner.nextInt();
                     if (moveinputX > -1 && moveinputX < 8 && moveinputY < 8 && moveinputY > -1) {
-                        while (checkMove(playerX, playerY, moveinputX, moveinputY, board) == MoveType.illegal) {
+                        while (checkMove(playerX, playerY, moveinputX, moveinputY, board) == MoveType.Illegal) {
                             System.out.print("Vælg et felt, som ikke er optaget!");
                             moveinputX = scanner.nextInt();
                             moveinputY = scanner.nextInt();
@@ -100,19 +100,17 @@ public class SimpleCheckers {
 
 
     static private MoveType checkMove(int x, int y, int x2, int y2, String[][] board) {
-        if (board[y][x].equals("b")) {
-            if (board[y2][x2].equals("b")) {
-                return MoveType.illegal;
+        if (board[y][x].equals(board[y][x])) {
+                return MoveType.Illegal;
             } else if (board[y2][x2].equals("-")) {
                 return MoveType.Standard;
-            } else if ((board[y2][x2].equals("w") && (x2 + (x2 - x) < 8 || y2 + (y2 - y) < 8))) {
+            } else if (((board[y2][x2].equals("w") || board[y2][x2].equals("b")) && (x2 + (x2 - x) < 8 || y2 + (y2 - y) < 8))) {
                 if (board[x2 + (x2 - x)][y2 + (y2 - y)].equals("-")) {
                     return MoveType.Kill;
                 }
             }
-        }
 
-            return MoveType.illegal;
+            return MoveType.Illegal;
     }
 
 

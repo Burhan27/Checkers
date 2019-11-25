@@ -240,4 +240,290 @@ public class SimpleCheckers {
             System.out.println();
         }
     }
+
+    static String[][] placeMove(int y, int x, int y2, int x2, String[][] board, MoveType movetype, int direction) {
+        String tile = board[y][x];
+        if(movetype == MoveType.Illegal || movetype == MoveType.KingIllegal) {
+            return board;
+        }
+        else if(movetype == MoveType.Kill || movetype == MoveType.KingSlay) {
+            board[y][x] = "-";
+            board[y2][x2] = "-";
+            switch (direction) {
+                case 1:
+                    board[y2 - 1][x2 - 1] = tile;
+                    break;
+                case 2:
+                    board[y2-1][x2+1] = tile;
+                    break;
+                case 3:
+                    board[y2+1][x2-1] = tile;
+                    break;
+                case 4:
+                    board[y2+1][x2+1] = tile;
+                    break;
+                default:
+                    return board;
+            }
+            return board;
+        }
+        else if (movetype == MoveType.Standard || movetype == MoveType.KingStandard) {
+            board[y][x] = "-";
+            board[y2][x2] = tile;
+
+        }
+        else if(movetype == MoveType.CrownKing){
+            board[y][x] = "-";
+            board[y2][x2] = tile+"k";
+        }
+        else if(movetype == MoveType.CrownKingKill || movetype == MoveType.CrownKingSlay) {
+            board[y][x] = "-";
+            board[y2][x2] = "-";
+            switch (direction) {
+                case 1:
+                    board[y2 - 1][x2 - 1] = tile+"k";
+                    break;
+                case 2:
+                    board[y2-1][x2+1] = tile+"k";
+                    break;
+                case 3:
+                    board[y2+1][x2-1] = tile+"k";
+                    break;
+                case 4:
+                    board[y2+1][x2+1] = tile+"k";
+                    break;
+                default:
+                    return board;
+            }
+            return board;
+        }
+   /*     else if(movetype == MoveType.KingSlay) {
+            board[y][x] = "-";
+            board[y2][x2] = "-";
+            switch (direction) {
+                case 1:
+                    board[y2 - 1][x2 - 1] = tile;
+                    break;
+                case 2:
+                    board[y2-1][x2+1] = tile;
+                    break;
+                case 3:
+                    board[y2+1][x2-1] = tile;
+                    break;
+                case 4:
+                    board[y2+1][x2+1] = tile;
+                    break;
+                default:
+                    return board;
+            }
+        }
+   */
+        return board;
+    }
+
+    static String[][] undoPlaceMove(int y, int x, int y2, int x2, String[][] board, MoveType movetype, int direction) {
+        String tile = board[y2][x2];
+        if (movetype == MoveType.Illegal || movetype == MoveType.KingIllegal) {
+            return board;
+        }
+        else if(movetype == MoveType.Standard || movetype == movetype.KingStandard) {
+            board[y][x] = tile;
+            board[y2][x2] = "-";
+            return board;
+        }
+        else if(movetype == MoveType.CrownKing) {
+            board[y][x] = tile.substring(0, tile.length() - 1);
+            board[y2][x2] = "-";
+        }
+        else if(movetype == MoveType.Kill) {
+            switch (direction) {
+                case 1:
+                    tile = board[y2 - 1][x2 - 1];
+                    board[y][x] = tile;
+                    if(tile.contains("w")) {
+                        board[y2][x2] = "b";
+                    } else {
+                        board[y2][x2] = "w";
+                    }
+                    board[y2 - 1][x2 - 1] = "-";
+                    break;
+                case 2:
+                    tile = board[y2 - 1][x2 + 1];
+                    board[y][x] = tile;
+                    if(tile.contains("w")) {
+                        board[y2][x2] = "b";
+                    } else {
+                        board[y2][x2] = "w";
+                    }
+                    board[y2 - 1][x2 + 1] = "-";
+                    break;
+                case 3:
+                    tile = board[y2 + 1][x2 - 1];
+                    board[y][x] = tile;
+                    if(tile.contains("w")) {
+                        board[y2][x2] = "b";
+                    } else {
+                        board[y2][x2] = "w";
+                    }
+                    board[y2 + 1][x2 - 1] = "-";
+                    break;
+                case 4:
+                    tile = board[y2 + 1][x2 + 1];
+                    board[y][x] = tile;
+                    if(tile.contains("w")) {
+                        board[y2][x2] = "b";
+                    } else {
+                        board[y2][x2] = "w";
+                    }
+                    board[y2 + 1][x2 + 1] = "-";
+                    break;
+                default:
+                    return board;
+            }
+        }
+        else if(movetype == MoveType.CrownKingKill) {
+            switch (direction) {
+                case 1:
+                    tile = board[y2 - 1][x2 - 1];
+                    board[y][x] = tile.substring(0, tile.length() - 1);
+                    if (tile.contains("w")) {
+                        board[y2][x2] = "b";
+                    } else {
+                        board[y2][x2] = "w";
+                    }
+                    board[y2 - 1][x2 - 1] = "-";
+                    break;
+                case 2:
+                    tile = board[y2 - 1][x2 + 1];
+                    board[y][x] = tile.substring(0, tile.length() - 1);
+                    if (tile.contains("w")) {
+                        board[y2][x2] = "b";
+                    } else {
+                        board[y2][x2] = "w";
+                    }
+                    board[y2 - 1][x2 + 1] = "-";
+                    break;
+                case 3:
+                    tile = board[y2 + 1][x2 - 1];
+                    board[y][x] = tile.substring(0, tile.length() - 1);
+                    if (tile.contains("w")) {
+                        board[y2][x2] = "b";
+                    } else {
+                        board[y2][x2] = "w";
+                    }
+                    board[y2 + 1][x2 - 1] = "-";
+                    break;
+                case 4:
+                    tile = board[y2 + 1][x2 + 1];
+                    board[y][x] = tile.substring(0, tile.length() - 1);
+                    if (tile.contains("w")) {
+                        board[y2][x2] = "b";
+                    } else {
+                        board[y2][x2] = "w";
+                    }
+                    board[y2 + 1][x2 + 1] = "-";
+                    break;
+                default:
+                    return board;
+            }
+        }
+        else if(movetype == MoveType.CrownKingSlay) {
+            switch (direction) {
+                case 1:
+                    tile = board[y2 - 1][x2 - 1];
+                    board[y][x] = tile.substring(0, tile.length() - 1);
+                    if (tile.contains("w")) {
+                        board[y2][x2] = "bk";
+                    } else {
+                        board[y2][x2] = "wk";
+                    }
+                    board[y2 - 1][x2 - 1] = "-";
+                    break;
+                case 2:
+                    tile = board[y2 - 1][x2 + 1];
+                    board[y][x] = tile.substring(0, tile.length() - 1);
+                    if (tile.contains("w")) {
+                        board[y2][x2] = "bk";
+                    } else {
+                        board[y2][x2] = "wk";
+                    }
+                    board[y2 - 1][x2 + 1] = "-";
+                    break;
+                case 3:
+                    tile = board[y2 + 1][x2 - 1];
+                    board[y][x] = tile.substring(0, tile.length() - 1);
+                    if (tile.contains("w")) {
+                        board[y2][x2] = "bk";
+                    } else {
+                        board[y2][x2] = "wk";
+                    }
+                    board[y2 + 1][x2 - 1] = "-";
+                    break;
+                case 4:
+                    tile = board[y2 + 1][x2 + 1];
+                    board[y][x] = tile.substring(0, tile.length() - 1);
+                    if (tile.contains("w")) {
+                        board[y2][x2] = "bk";
+                    } else {
+                        board[y2][x2] = "wk";
+                    }
+                    board[y2 + 1][x2 + 1] = "-";
+                    break;
+                default:
+                    return board;
+            }
+        }
+        else if(movetype == MoveType.KingSlay) {
+            switch (direction) {
+                case 1:
+                    tile = board[y2 - 1][x2 - 1];
+                    board[y][x] = tile;
+                    if(tile.contains("w")) {
+                        board[y2][x2] = "bk";
+                    } else {
+                        board[y2][x2] = "wk";
+                    }
+                    board[y2 - 1][x2 - 1] = "-";
+                    break;
+                case 2:
+                    tile = board[y2 - 1][x2 + 1];
+                    board[y][x] = tile;
+                    if(tile.contains("w")) {
+                        board[y2][x2] = "bk";
+                    } else {
+                        board[y2][x2] = "wk";
+                    }
+                    board[y2 - 1][x2 + 1] = "-";
+                    break;
+                case 3:
+                    tile = board[y2 + 1][x2 - 1];
+                    board[y][x] = tile;
+                    if(tile.contains("w")) {
+                        board[y2][x2] = "bk";
+                    } else {
+                        board[y2][x2] = "wk";
+                    }
+                    board[y2 + 1][x2 - 1] = "-";
+                    break;
+                case 4:
+                    tile = board[y2 + 1][x2 + 1];
+                    board[y][x] = tile;
+                    if(tile.contains("w")) {
+                        board[y2][x2] = "bk";
+                    } else {
+                        board[y2][x2] = "wk";
+                    }
+                    board[y2 + 1][x2 + 1] = "-";
+                    break;
+                default:
+                    return board;
+            }
+        }
+
+
+        return board;
+    }
+
+
+
 }

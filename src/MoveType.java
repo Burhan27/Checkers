@@ -3,5 +3,9 @@ public enum MoveType {
     Kill,
     Standard,
     Illegal,
-    KingMove,
+    NoMove,
+    KingStandard,
+    KingIllegal,
+    KingKill,
+    CrownKing,
 }

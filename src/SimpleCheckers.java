@@ -12,18 +12,25 @@ public class SimpleCheckers {
         String[][] board = {
                 {"-", "b", "-", "b", "-", "b", "-", "b"},
                 {"b", "-", "b", "-", "b", "-", "b", "-"},
-                {"-", "b", "-", "b", "-", "b", "-", "b"},
+                {"-", "b", "-", "bk", "-", "b", "-", "b"},
                 {"-", "-", "-", "-", "-", "-", "-", "-"},
-                {"-", "-", "-", "-", "-", "-", "-", "-"},
+                {"-", "b", "-", "-", "-", "-", "-", "-"},
                 {"w", "-", "w", "-", "w", "-", "w", "-"},
                 {"-", "w", "-", "w", "-", "w", "-", "w"},
                 {"w", "-", "w", "-", "w", "-", "w", "-"}
         };
 
-        gameLogic(board);
+        System.out.println(board[5][0] + " and " + board[4][1]);
+        System.out.println("TYPE IS " + checkMove(5, 0, 4, 1, board));
+        int[]moves = getPossibleMoves(2,1,board);
+        System.out.println("possibluy moves for 'b'= " + moves[0] +" " + moves[3] );
+        moves = getPossibleMoves(5,0,board);
+        System.out.println("possibluey moves for 'w' = " + moves[0] +" " + moves[3]);
+        moves = getPossibleMoves(2,3,board);
+        System.out.println("plavesdeble movesv for 'K' =" + moves[0] +" " + moves[3]);
+        //gameLogic(board);
 
     }
-
 
 
     static void gameLogic(String[][] board) {
@@ -98,19 +105,28 @@ public class SimpleCheckers {
     }
 
 
+    static private String getWinner(){
 
-    static private MoveType checkMove(int x, int y, int x2, int y2, String[][] board) {
-        if (board[y][x].equals(board[y][x])) {
-                return MoveType.Illegal;
-            } else if (board[y2][x2].equals("-")) {
-                return MoveType.Standard;
-            } else if (((board[y2][x2].equals("w") || board[y2][x2].equals("b")) && (x2 + (x2 - x) < 8 || y2 + (y2 - y) < 8))) {
-                if (board[x2 + (x2 - x)][y2 + (y2 - y)].equals("-")) {
-                    return MoveType.Kill;
+    }
+
+    static private MoveType checkMove(int y, int x, int y2, int x2, String[][] board) {
+        MoveType moveType = MoveType.NoMove;
+
+        if (board[y][x].equals(board[y2][x2])) {
+            moveType = MoveType.Illegal;
+        } else if (board[y2][x2].equals("-")) {
+            moveType = MoveType.Standard;
+        } else if (board[y2][x2].equals("w") || board[y2][x2].equals("b")) {
+            int dx =x2 + (x2 - x);
+            int dy = y + (y2 - y);
+            if(dx  < 8 || dy  < 8){
+                if (board[dx][dy].equals("-")) {
+                    moveType = MoveType.Kill;
                 }
             }
+        }else moveType = MoveType.Illegal;
 
-            return MoveType.Illegal;
+        return moveType;
     }
 
 
@@ -134,22 +150,30 @@ public class SimpleCheckers {
     }
 
 
-
-    private int[] getPossibleMoves(int x, int y, String[][] board) {
+    static private int[] getPossibleMoves(int y, int x, String[][] board) {
         int[] moves = new int[4];
         if (board[y][x].equals("b")) {
-            if (board[y + 1][x + 1].equals("b")) {
-                moves[0] = -1;
-            } else if (board[y + 1][x + 1].equals("w")) {
-                if (x + 2 < 8 || y + 2 < 8) {
-                    if (board[y + 2][x + 2].equals("-")) {
-                        moves[0] = 11;
-                    }
-                }
-
-            }
+            moves[0] = 3;
+            moves[1] = 4;
+            moves[2] = -1;
+            moves[3] = -1;
         } else if (board[y][x].contains("k")) {
-
+            moves[0] = 1;
+            moves[1] = 2;
+            moves[2] = 3;
+            moves[3] = 4;
+        }
+        else if (board[y][x].equals("w")){
+            moves[0] = 1;
+            moves[1] = 2;
+            moves[2] = -1;
+            moves[3] = -1;
+        }
+        else{
+            moves[0] = -1;
+            moves[1] = -1;
+            moves[2] = -1;
+            moves[3] = -1;
         }
 
         return moves;
@@ -157,13 +181,11 @@ public class SimpleCheckers {
 
 
     void printBoard(String[][] board) {
-        for(String[] x : board) {
-            for(String y : x) {
+        for (String[] x : board) {
+            for (String y : x) {
                 System.out.print(y + " ");
             }
             System.out.println();
         }
     }
-
-
 }

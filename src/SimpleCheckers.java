@@ -38,8 +38,9 @@ public class SimpleCheckers {
 
     static void gameLogic(String[][] board) {
         int turn = 0;
+        MoveType moveType;
         Scanner scanner = new Scanner(System.in);
-        int input, boardinputX, boardinputY, playerX = 0, playerY = 0, moveinputX, moveinputY, moveX, moveY;
+        int input, boardinputX, boardinputY, moveDirection, destinX = 0, destinY = 0;
 
         System.out.print("Tast 1 for at være 1 spiller, eller tast 2 for at være 2 spiller");
 
@@ -56,57 +57,93 @@ public class SimpleCheckers {
 
         while (1 > 0) {
             turn++;
-
             if ((turn % 2) == 0) {
                 System.out.println("bote");
             } else {
-                System.out.print("Tast to tal  0-7 (Den brik du gerne vil rykke)");
-                boardinputX = 900;
-                boardinputY = 900;
+                System.out.print("Tast en y værdi og så en x værdi");
+                boardinputY = scanner.nextInt();
+                boardinputX = scanner.nextInt();
                 while ((!(boardinputY > -1 && boardinputY < 8 && boardinputX < 8 && boardinputX > -1))) {
-                    boardinputX = scanner.nextInt();
+                    System.out.println("Valgt brik " + boardinputY + " " + boardinputX);
                     boardinputY = scanner.nextInt();
-                    System.out.print(boardinputX + " " + boardinputY);
+                    boardinputX = scanner.nextInt();
                     if (boardinputY > -1 && boardinputY < 8 && boardinputX < 8 && boardinputX > -1) {
-                        while (!board[boardinputX][boardinputY].equals("b")) {
+                        while ((board[boardinputY][boardinputX].contains("w"))) {
                             System.out.print("Vælg et felt, som ikke er optaget!");
-                            boardinputX = scanner.nextInt();
                             boardinputY = scanner.nextInt();
+                            boardinputX = scanner.nextInt();
                         }
-                        playerX = boardinputX;
-                        playerY = boardinputY;
                         break;
                     } else {
                         System.out.println("Vælg to tal mellem 0 og 7!");
                     }
                 }
 
-                System.out.print("Tast to tal  0-7 (Den feltet du gerne vil rykke hen tile)");
-                moveinputX = 900;
-                moveinputY = 900;
-                while ((!(moveinputX > -1 && moveinputX < 8 && moveinputY < 8 && moveinputY > -1))) {
-                    moveinputX = scanner.nextInt();
-                    moveinputY = scanner.nextInt();
-                    if (moveinputX > -1 && moveinputX < 8 && moveinputY < 8 && moveinputY > -1) {
-                        while (checkMove(playerX, playerY, moveinputX, moveinputY, board) == MoveType.Illegal) {
-                            System.out.print("Vælg et felt, som ikke er optaget!");
-                            moveinputX = scanner.nextInt();
-                            moveinputY = scanner.nextInt();
+                System.out.print("Tast et tal mellem 1 og 4 for retning");
+                moveDirection = 900;
+                while ((!(moveDirection > 0 && moveDirection < 5))) {
+                    moveDirection = scanner.nextInt();
+                    switch (moveDirection) {
+                        case 1:
+                            destinX = boardinputX-1;
+                            destinY = boardinputY-1;
+                            break;
+                        case 2:
+                            destinX = boardinputX+1;
+                            destinY = boardinputY-1;
+                            break;
+                        case 3:
+                            destinX = boardinputX-1;
+                            destinY = boardinputY+1;
+                            break;
+                        case  4:
+                            destinX = boardinputX+1;
+                            destinY = boardinputY+1;
+                        default:
+                            break;
+                    }
+                    if (moveDirection > 0 && moveDirection < 5) {
+                        while (checkMove(boardinputY, boardinputX, destinY, destinX, board) == MoveType.Illegal) {
+                            System.out.println(destinY + " " + destinX);
+                            System.out.print("Vælg et lovligt træk!");
+                            moveDirection = scanner.nextInt();
+                            switch (moveDirection) {
+                                case 1:
+                                    destinX = boardinputX-1;
+                                    destinY = boardinputY-1;
+                                    break;
+                                case 2:
+                                    destinX = boardinputX+1;
+                                    destinY = boardinputY-1;
+                                    break;
+                                case 3:
+                                    destinX = boardinputX-1;
+                                    destinY = boardinputY+1;
+                                    break;
+                                case  4:
+                                    destinX = boardinputX+1;
+                                    destinY = boardinputY+1;
+                                default:
+                                    break;
+                            }
                         }
                         //tjek for andre playerType
-
 
                         //Her skal vi tjekke om det er et tilddat move
                         //Her skal vi rykke brækken der hen og så fjerne dem der er under
                         //Her skal vi udvikle brækken hvis det er ved enden
                         //break
+                        break;
+                    } else {
+                        System.out.println("Tast et tal mellem 1-4");
                     }
                 }
-                //     printBoard(board);
+                moveType = checkMove(boardinputY, boardinputX, destinY, destinX, board);
+                placeMove(boardinputY, boardinputX, destinY, destinX, board, moveType,  moveDirection);
+                printBoard(board);
             }
         }
     }
-
 
     static private String getWinner(String[][] board) {
         int wcount = 0;
@@ -133,6 +170,11 @@ public class SimpleCheckers {
 
     static private MoveType checkMove(int y, int x, int y2, int x2, String[][] board) {
         MoveType moveType = MoveType.Illegal;
+
+        if(y2 < 0 || y2 > 7 || x2 < 0 || x2 > 7) {
+            System.out.println("test");
+            return moveType;
+        }
 
         if (board[y][x].contains("k")) {
             if (board[y][x].contains(board[y2][x2])) {
@@ -233,7 +275,7 @@ public class SimpleCheckers {
     }
 
 
-    void printBoard(String[][] board) {
+    static void printBoard(String[][] board) {
         for (String[] x : board) {
             for (String y : x) {
                 System.out.print(y + " ");

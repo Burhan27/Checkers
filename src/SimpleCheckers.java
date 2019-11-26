@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 public class SimpleCheckers {
 
-    static int MAX_DEPTH = 2;
+    static int MAX_DEPTH = 6;
     static int MAX = 1000;
     static int MIN = -1000;
     static int[] move = new int[3];
@@ -23,27 +23,16 @@ public class SimpleCheckers {
         };
 
         String[][] board2 = {
+                {"-", "w", "-", "w", "-", "w", "-", "w"},
+                {"w", "-", "w", "-", "w", "-", "w", "-"},
+                {"-", "w", "-", "w", "-", "w", "-", "w"},
                 {"-", "-", "-", "-", "-", "-", "-", "-"},
                 {"-", "-", "-", "-", "-", "-", "-", "-"},
-                {"-", "-", "-", "-", "-", "-", "-", "-"},
-                {"-", "-", "-", "-", "-", "-", "-", "-"},
-                {"-", "-", "-", "-", "-", "-", "-", "-"},
-                {"-", "-", "-", "-", "b", "-", "-", "-"},
-                {"-", "b", "-", "w", "-", "-", "-", "w"},
-                {"-", "-", "-", "-", "-", "-", "-", "-"}
+                {"b", "-", "b", "-", "b", "-", "b", "-"},
+                {"-", "b", "-", "b", "-", "b", "-", "b"},
+                {"b", "-", "b", "-", "b", "-", "b", "-"}
         };
 
-
-      /*  System.out.println(board[5][0] + " and " + board[4][1]);
-        System.out.println("TYPE IS " + checkMove(2, 3, 1, 4, board));
-        int[] moves = getPossibleMoves(2, 1, board);
-        System.out.println("possibluy moves for 'b'= " + moves[0] + " " + moves[3]);
-        moves = getPossibleMoves(5, 0, board);
-        System.out.println("possibluey moves for 'w' = " + moves[0] + " " + moves[3]);
-        moves = getPossibleMoves(2, 3, board);
-        System.out.println("plavesdeble movesv for 'K' =" + moves[0] + " " + moves[3]);
-
-        System.out.println("java exksepirment  " + "wk".contains("b"));*/
         gameLogic(board);
 
     }
@@ -112,7 +101,7 @@ public class SimpleCheckers {
                         System.out.println("Tast et tal mellem 1-4");
                     }
                 }
-                moveType = checkMove(boardinputY, boardinputX,moveDirection, board);
+                moveType = checkMove(boardinputY, boardinputX, moveDirection, board);
                 placeMove(boardinputY, boardinputX, board, moveType, moveDirection);
                 printBoard(board);
             }
@@ -178,9 +167,7 @@ public class SimpleCheckers {
                 moveType = MoveType.KingStandard;
             } else if (!board[y][x].contains(board[y2][x2]) && !board[y2][x2].equals("-")) {
                 int dx = x2 + (x2 - x);
-                System.out.println("dx " + dx);
                 int dy = y2 + (y2 - y);
-                System.out.println("dy " + dy);
                 if (dx < 8 && dy < 8 && dx > -1 && dy > -1) {
                     if (board[dy][dx].equals("-")) {
                         if (board[y2][x2].contains("k")) {
@@ -271,6 +258,7 @@ public class SimpleCheckers {
 
 
     static void printBoard(String[][] board) {
+        System.out.println();
         for (String[] x : board) {
             for (String y : x) {
                 System.out.print(y + " ");
@@ -362,23 +350,20 @@ public class SimpleCheckers {
     }
 
     static private int stateEvaluation(ArrayList<MoveType> moves, int depth, String[][] board) {
+        int value = 0;
         if (getWinner(board).equals("w")) {
-            int value = 0;
             value -= 500 - depth;
             return value;
 
         } else if (getWinner(board).equals("b")) {
-            int value = 0;
             value += 500 - depth;
             return value;
 
         } else {
-            int value = 0;
             for (int i = 0; i < moves.size(); i++) {
-                System.out.println("MOVESIZE =" +moves.size());
                 if (i % 2 == 0) {
                     if (moves.get(i).equals(MoveType.KingStandard) || moves.get(i).equals(MoveType.Standard)) {
-                        value += 1;
+                        value += 0;
                     } else if (moves.get(i).equals(MoveType.Kill)) {
                         value += 5;
                     } else if (moves.get(i).equals(MoveType.KingSlay)) {
@@ -391,24 +376,21 @@ public class SimpleCheckers {
                         value += 17;
                     }
                 } else {
-                    if (i % 2 == 0) {
-                        if (moves.get(i).equals(MoveType.KingStandard) || moves.get(i).equals(MoveType.Standard)) {
-                            value -= 1;
-                        } else if (moves.get(i).equals(MoveType.Kill)) {
-                            value -= 5;
-                        } else if (moves.get(i).equals(MoveType.KingSlay)) {
-                            value -= 10;
-                        } else if (moves.get(i).equals(MoveType.CrownKing)) {
-                            value -= 12;
-                        } else if (moves.get(i).equals(MoveType.CrownKingSlay)) {
-                            value -= 22;
-                        } else if (moves.get(i).equals(MoveType.CrownKingKill)) {
-                            value -= 17;
-                        }
+                    if (moves.get(i).equals(MoveType.KingStandard) || moves.get(i).equals(MoveType.Standard)) {
+                        value -= 0;
+                    } else if (moves.get(i).equals(MoveType.Kill)) {
+                        value -= 5;
+                    } else if (moves.get(i).equals(MoveType.KingSlay)) {
+                        value -= 10;
+                    } else if (moves.get(i).equals(MoveType.CrownKing)) {
+                        value -= 12;
+                    } else if (moves.get(i).equals(MoveType.CrownKingSlay)) {
+                        value -= 22;
+                    } else if (moves.get(i).equals(MoveType.CrownKingKill)) {
+                        value -= 17;
                     }
                 }
             }
-            System.out.println("VALUE: " + value);
             return value;
         }
     }
@@ -417,20 +399,18 @@ public class SimpleCheckers {
         ArrayList<MoveType> moves = new ArrayList<MoveType>();
         alpharBeta(0, moves, MIN, MAX, board);
         MoveType moveType = checkMove(move[0], move[1], move[2], board);
-        System.out.println(" black BOTE DO " + moveType);
-        System.out.println(" BLACK BOTE TOOK y: " + move[0] + " x: " + move[1]);
         placeMove(move[0], move[1], board, moveType, move[2]);
     }
 
-    static private boolean isGameOver(String[][] board){
-       String winner = getWinner(board);
-       if(!winner.equals("NA")){
-           return true;
-       }
-       else return false;
+
+    static private boolean isGameOver(String[][] board) {
+        String winner = getWinner(board);
+        if (!winner.equals("NA")) {
+            return true;
+        } else return false;
     }
+
     static private int alpharBeta(int depth, ArrayList<MoveType> path, int alpha, int beta, String[][] board) {
-        System.out.println("SIZE IN AB:" +path.size() + "in depth " + depth);
         if (depth == MAX_DEPTH || isGameOver(board)) {
             return stateEvaluation(path, depth, board);
         }
@@ -452,21 +432,17 @@ public class SimpleCheckers {
                                     path.add(moveType);
                                     placeMove(y, x, board, moveType, directions[i]);
                                     current_value = alpharBeta(depth + 1, path, alpha, beta, board);
-                                    System.out.println("C: "+ current_value);
                                     undoPlaceMove(y, x, board, moveType, directions[i]);
+                                    System.out.println(current_value);
                                     if (current_value > best_value) {
                                         best_value = current_value;
                                         move[0] = y;
                                         move[1] = x;
                                         move[2] = directions[i];
                                     }
-                                    System.out.println("bout to clear");
                                     path.clear();
-                                    System.out.println("done clear"+ path.size());
                                 } else {
-                                    System.out.println("imma clear out");
                                     path.clear();
-                                    System.out.println("ale clear" + path.size());
                                     continue;
                                 }
                             }
@@ -490,22 +466,17 @@ public class SimpleCheckers {
                                         MoveType moveType = checkMove(y, x, directions[i], board);
                                         path.add(moveType);
                                         placeMove(y, x, board, moveType, directions[i]);
+                                        if (path.size() < depth) {
+                                            path.add(moveType);
+                                        } else {
+                                            path.subList(depth - 1, path.size() - 1).clear();
+                                            path.add(moveType);
+                                        }
                                         int child_value = alpharBeta(depth + 1, path, alpha, beta, board);
-                                        System.out.println("MAX_CHILD = "+ child_value );
                                         undoPlaceMove(y, x, board, moveType, directions[i]);
                                         max = Math.max(max, child_value);
                                         if (max > alpha) {
                                             alpha = max;
-                                            System.out.println("alpha up");
-                                            if (path.size() < depth) {
-                                                System.out.println("not deep enough");
-                                                path.add(moveType);
-                                            } else {
-                                                System.out.println("remove 1");
-                                                path.remove(depth-1);
-                                                System.out.println(path.size());
-                                                path.add(moveType);
-                                            }
                                         }
                                         if (alpha > beta) {
                                             break;
@@ -532,21 +503,17 @@ public class SimpleCheckers {
                                         MoveType moveType = checkMove(y, x, directions[i], board);
                                         path.add(moveType);
                                         placeMove(y, x, board, moveType, directions[i]);
+                                        if (path.size() < depth) {
+                                            path.add(moveType);
+                                        } else {
+                                            path.subList(depth - 1, path.size() - 1).clear();
+                                            path.add(moveType);
+                                        }
                                         int child_value = alpharBeta(depth + 1, path, alpha, beta, board);
-                                        System.out.println("MIN_CHILD = "+ child_value );
                                         undoPlaceMove(y, x, board, moveType, directions[i]);
                                         min = Math.min(min, child_value);
                                         if (min < beta) {
                                             beta = min;
-                                            if (path.size() < depth) {
-                                                System.out.println("min too deep");
-                                                path.add(moveType);
-                                            } else {
-                                                System.out.println("min remove");
-                                                path.remove(depth - 1);
-                                                System.out.println("stinky "+ path.size());
-                                                path.add(moveType);
-                                            }
                                         }
                                         if (alpha > beta) {
                                             break;

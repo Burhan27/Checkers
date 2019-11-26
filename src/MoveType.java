@@ -9,4 +9,5 @@ public enum MoveType {
     CrownKingKill, //a non-king piece kills another non-king piece and reaches the other side of the board.
     CrownKingSlay, //a non-king piece kills another king piece and reaches the other side of the board.
     KingSlay, //a piece kills a king piece
+    MultiKill, //FOR BOT ONLY kill multiple targets
 }

@@ -383,11 +383,11 @@ public class SimpleCheckers {
                     } else if (moves.get(i).equals(MoveType.KingSlay)) {
                         value -= 10;
                     } else if (moves.get(i).equals(MoveType.CrownKing)) {
-                        value -= 12;
+                        value -= 15;
                     } else if (moves.get(i).equals(MoveType.CrownKingSlay)) {
-                        value -= 22;
+                        value -= 25;
                     } else if (moves.get(i).equals(MoveType.CrownKingKill)) {
-                        value -= 17;
+                        value -= 20;
                     }
                 }
             }
@@ -417,6 +417,7 @@ public class SimpleCheckers {
         //kør det hele gennem med en liste over moves du kan lave, tag summen af de forskellige værdier hvor hver anden
         // er et minus tal.
         else if (depth == 0) {
+            boolean kill = false;
             int current_value;
             int best_value = MIN;
             for (int y = 0; y < board.length; y++) {
@@ -433,12 +434,19 @@ public class SimpleCheckers {
                                     placeMove(y, x, board, moveType, directions[i]);
                                     current_value = alpharBeta(depth + 1, path, alpha, beta, board);
                                     undoPlaceMove(y, x, board, moveType, directions[i]);
-                                    System.out.println(current_value);
-                                    if (current_value > best_value) {
+                                    if (current_value > best_value || (moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+
                                         best_value = current_value;
                                         move[0] = y;
                                         move[1] = x;
                                         move[2] = directions[i];
+
+                                        if ((moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+                                            move[0] = y;
+                                            move[1] = x;
+                                            move[2] = directions[i];
+                                            break;
+                                        }
                                     }
                                     path.clear();
                                 } else {
@@ -453,7 +461,7 @@ public class SimpleCheckers {
         } else {
             if (depth % 2 == 0) {
                 int max = MIN;
-
+                boolean kill = false;
                 for (int y = 0; y < board.length; y++) {
                     for (int x = 0; x < board[y].length; x++) {
                         if (board[y][x].contains("b")) {
@@ -464,19 +472,29 @@ public class SimpleCheckers {
                                 for (int i = 0; i < directions.length; i++) {
                                     if (directions[i] > 0) {
                                         MoveType moveType = checkMove(y, x, directions[i], board);
+                                        if(kill == true){
+                                            if(!(moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))){
+                                                continue;
+                                            }
+                                        }
                                         path.add(moveType);
                                         placeMove(y, x, board, moveType, directions[i]);
+
                                         if (path.size() < depth) {
                                             path.add(moveType);
                                         } else {
                                             path.subList(depth - 1, path.size() - 1).clear();
                                             path.add(moveType);
                                         }
+
                                         int child_value = alpharBeta(depth + 1, path, alpha, beta, board);
                                         undoPlaceMove(y, x, board, moveType, directions[i]);
                                         max = Math.max(max, child_value);
                                         if (max > alpha) {
                                             alpha = max;
+                                        }
+                                        if((moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))){
+                                            kill = true;
                                         }
                                         if (alpha > beta) {
                                             break;
@@ -490,7 +508,7 @@ public class SimpleCheckers {
                 return alpha;
             } else {
                 int min = MAX;
-
+                boolean kill = false;
                 for (int y = 0; y < board.length; y++) {
                     for (int x = 0; x < board[y].length; x++) {
                         if (board[y][x].contains("w")) {
@@ -501,6 +519,11 @@ public class SimpleCheckers {
                                 for (int i = 0; i < directions.length; i++) {
                                     if (directions[i] > 0) {
                                         MoveType moveType = checkMove(y, x, directions[i], board);
+                                        if(kill == true){
+                                            if(!(moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))){
+                                                continue;
+                                            }
+                                        }
                                         path.add(moveType);
                                         placeMove(y, x, board, moveType, directions[i]);
                                         if (path.size() < depth) {
@@ -514,6 +537,9 @@ public class SimpleCheckers {
                                         min = Math.min(min, child_value);
                                         if (min < beta) {
                                             beta = min;
+                                        }
+                                        if(!(moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))){
+                                            kill = true;
                                         }
                                         if (alpha > beta) {
                                             break;

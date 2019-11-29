@@ -2,10 +2,13 @@ public class Piece {
 
     Boolean isKing;
     String graphic;
+    int value = 10;
+    int placement;
 
-    public Piece(Boolean isKing, String graphic) {
+    public Piece(Boolean isKing, String graphic,int placement) {
         this.isKing = isKing;
         this.graphic = graphic;
+        this.placement = placement;
     }
 
     public Boolean getKing() {
@@ -14,6 +17,9 @@ public class Piece {
 
     public void setKing(Boolean king) {
         isKing = king;
+        if(king == true) {
+            setGraphic(graphic + "K");
+        }
     }
 
     public String getGraphic() {
@@ -22,5 +28,13 @@ public class Piece {
 
     public void setGraphic(String graphic) {
         this.graphic = graphic;
+    }
+
+    public void setValue(int value) {
+        value = value;
+    }
+
+    public int getValue(){
+        return value;
     }
 }

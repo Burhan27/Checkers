@@ -19,12 +19,14 @@ public class SimpleCheckers {
         this.board = board;
     }
 
+
     public void gameLogic() {
         int turn = 0;
-        MoveType moveType;
+        boolean playerDone;
         Scanner scanner = new Scanner(System.in);
         int input, boardinputX, boardinputY, moveDirection;
 
+        printBoard(board);
         System.out.print("Tast 1 for at være 1 spiller, eller tast 2 for at være 2 spiller");
 
         input = scanner.nextInt();
@@ -39,56 +41,76 @@ public class SimpleCheckers {
         }
 
         while (!isGameOver(board)) {
+            playerDone = false;
             turn++;
             if ((turn % 2) == 0) {
                 pcTurn(board);
                 printBoard(board);
             } else {
-                System.out.print("Tast en y værdi og så en x værdi");
-                boardinputY = scanner.nextInt();
-                boardinputX = scanner.nextInt();
-                while ((!(boardinputY > -1 && boardinputY < 8 && boardinputX < 8 && boardinputX > -1))) {
-                    System.out.println("Valgt brik " + boardinputY + " " + boardinputX);
-                    boardinputY = scanner.nextInt();
-                    boardinputX = scanner.nextInt();
-                    if (boardinputY > -1 && boardinputY < 8 && boardinputX < 8 && boardinputX > -1) {
-                        while ((board[boardinputY][boardinputX].contains("w"))) {
-                            System.out.print("Vælg et felt, som ikke er optaget!");
-                            boardinputY = scanner.nextInt();
-                            boardinputX = scanner.nextInt();
-                        }
-                        break;
-                    } else {
-                        System.out.println("Vælg to tal mellem 0 og 7!");
-                    }
+                while(!playerDone) {
+                    playerDone =  playerTurn(scanner);
                 }
-
-                System.out.print("Tast et tal mellem 1 og 4 for retning");
-                moveDirection = 900;
-                while ((!(moveDirection > 0 && moveDirection < 5))) {
-                    moveDirection = scanner.nextInt();
-                    if (moveDirection > 0 && moveDirection < 5) {
-                        while (checkMove(boardinputY, boardinputX, moveDirection, board) == MoveType.Illegal) {
-                            System.out.print("Vælg et lovligt træk!");
-                            moveDirection = scanner.nextInt();
-                        }
-                        //tjek for andre playerType
-
-                        //Her skal vi tjekke om det er et tilddat move
-                        //Her skal vi rykke brækken der hen og så fjerne dem der er under
-                        //Her skal vi udvikle brækken hvis det er ved enden
-                        //break
-                        break;
-                    } else {
-                        System.out.println("Tast et tal mellem 1-4");
-                    }
-                }
-                moveType = checkMove(boardinputY, boardinputX, moveDirection, board);
-                placeMove(boardinputY, boardinputX, board, moveType, moveDirection);
-                printBoard(board);
             }
         }
     }
+
+
+
+    private boolean playerTurn(Scanner scanner) {
+        int boardinputX, boardinputY, moveDirection;
+        MoveType moveType;
+        System.out.print("Tast en y værdi og så en x værdi");
+        boardinputY = scanner.nextInt();
+        if(boardinputY == 99) {
+            return true;
+        }
+        boardinputX = scanner.nextInt();
+        while ((!(boardinputY > -1 && boardinputY < 8 && boardinputX < 8 && boardinputX > -1))) {
+            System.out.println("Valgt brik " + boardinputY + " " + boardinputX);
+            boardinputY = scanner.nextInt();
+            boardinputX = scanner.nextInt();
+            if (boardinputY > -1 && boardinputY < 8 && boardinputX < 8 && boardinputX > -1) {
+                while ((board[boardinputY][boardinputX].contains("w"))) {
+                    System.out.print("Vælg et felt, som ikke er optaget!");
+                    boardinputY = scanner.nextInt();
+                    boardinputX = scanner.nextInt();
+                }
+                break;
+            } else {
+                System.out.println("Vælg to tal mellem 0 og 7!");
+            }
+        }
+
+        System.out.print("Tast et tal mellem 1 og 4 for retning");
+        moveDirection = 900;
+        while ((!(moveDirection > 0 && moveDirection < 5))) {
+            moveDirection = scanner.nextInt();
+            if (moveDirection > 0 && moveDirection < 5) {
+                while (checkMove(boardinputY, boardinputX, moveDirection, board) == MoveType.Illegal) {
+                    System.out.print("Vælg et lovligt træk!");
+                    moveDirection = scanner.nextInt();
+                }
+                //tjek for andre playerType
+
+                //Her skal vi tjekke om det er et tilddat move
+                //Her skal vi rykke brækken der hen og så fjerne dem der er under
+                //Her skal vi udvikle brækken hvis det er ved enden
+                //break
+                break;
+            } else {
+                System.out.println("Tast et tal mellem 1-4");
+            }
+        }
+        moveType = checkMove(boardinputY, boardinputX, moveDirection, board);
+        placeMove(boardinputY, boardinputX, board, moveType, moveDirection);
+        printBoard(board);
+        if(moveType == MoveType.Kill || moveType == MoveType.KingSlay) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
 
     private int[] getDirectionCoordinate(int y, int x, int direction) {
         int[] coordinates = new int[2];
@@ -341,55 +363,25 @@ public class SimpleCheckers {
         return board;
     }
 
-    private int stateEvaluation(ArrayList<MoveType> moves, int depth, String[][] board) {
+
+    private int stateEvaluation(int depth, String[][] board) {
         int value = 0;
-        if (getWinner(board).equals("w")) {
-            value -= 500 - depth;
-            return value;
 
-        } else if (getWinner(board).equals("b")) {
-            value += 500 - depth;
-            return value;
-
-        } else {
-            for (int i = 0; i < moves.size(); i++) {
-                if (i % 2 == 0) {
-                    if (moves.get(i).equals(MoveType.KingStandard) || moves.get(i).equals(MoveType.Standard)) {
-                        value += 0;
-                    } else if (moves.get(i).equals(MoveType.Kill)) {
-                        value += 5;
-                    } else if (moves.get(i).equals(MoveType.KingSlay)) {
-                        value += 10;
-                    } else if (moves.get(i).equals(MoveType.CrownKing)) {
-                        value += 12;
-                    } else if (moves.get(i).equals(MoveType.CrownKingSlay)) {
-                        value += 22;
-                    } else if (moves.get(i).equals(MoveType.CrownKingKill)) {
-                        value += 17;
-                    }else if (moves.get(i).equals(MoveType.MultiKill)) {
-                        value += 30;
-                    }
-                } else {
-                    if (moves.get(i).equals(MoveType.KingStandard) || moves.get(i).equals(MoveType.Standard)) {
-                        value -= 0;
-                    } else if (moves.get(i).equals(MoveType.Kill)) {
-                        value -= 5;
-                    } else if (moves.get(i).equals(MoveType.KingSlay)) {
-                        value -= 10;
-                    } else if (moves.get(i).equals(MoveType.CrownKing)) {
-                        value -= 15;
-                    } else if (moves.get(i).equals(MoveType.CrownKingSlay)) {
-                        value -= 25;
-                    } else if (moves.get(i).equals(MoveType.CrownKingKill)) {
-                        value -= 20;
-                    }
-                    else if (moves.get(i).equals(MoveType.MultiKill)) {
-                        value -= 30;
-                    }
+        for(int i = 0; i < board.length; i++) {
+            for(int j = 0; j < board[i].length; j++) {
+                if (board[i][j].equals("w")) {
+                    value -= 2;
+                } else if (board[i][j].equals("b")) {
+                    value += 2;
+                } else if ((board[i][j].equals("wk"))) {
+                    value -= 5;
+                } else if ((board[i][j].equals("bk"))) {
+                    value += 5;
                 }
             }
-            return value;
         }
+        System.out.println("value " + value);
+        return value;
     }
 
     private  String[][] simulateMultikill(int y, int x,int direction,int depth,String[][] board){
@@ -438,7 +430,7 @@ public class SimpleCheckers {
 
     private int alphaBeta(int depth, ArrayList<MoveType> path, int alpha, int beta, String[][] board) {
         if (depth == MAX_DEPTH || isGameOver(board)) {
-            return stateEvaluation(path, depth, board);
+            return stateEvaluation(depth, board);
         }
         //kør det hele gennem med en liste over moves du kan lave, tag summen af de forskellige værdier hvor hver anden
         // er et minus tal.

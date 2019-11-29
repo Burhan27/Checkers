@@ -1,4 +1,5 @@
 import javax.sound.sampled.EnumControl;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -176,9 +177,6 @@ public class SimpleCheckers {
                 int[] truedest =getDirectionCoordinate(y2,x2,direction);
                 int dx = truedest[1];
                 int dy = truedest[0];
-                System.out.println("start placed " + y +" " + x);
-                System.out.println("dest placed " + y2 +" " + x2);
-                System.out.println("true dest placed " + truedest[0] +" " + truedest[1]);
                 if (dx < 8 && dy < 8 && dx > -1 && dy > -1) {
                     if (board[dy][dx].equals("-")) {
                         if ((dy == 0 && board[y][x].equals("w")) || (dy == 7 && board[y][x].equals("b"))) {
@@ -408,9 +406,7 @@ public class SimpleCheckers {
                 MoveType simMove = checkMove(trueDest[0],trueDest[1],legalMove[i],newBoard);
                 if(simMove == MoveType.Kill || simMove == MoveType.KingSlay
                         || simMove == MoveType.CrownKingKill || simMove == MoveType.CrownKingSlay){
-                    if(depth == 0){
                         multikill = true;
-                    }
                     placeMove(trueDest[0],trueDest[1],newBoard,simMove,legalMove[i]);
                     newBoard  = simulateMultikill(trueDest[0],trueDest[1],legalMove[i], depth,newBoard);
 
@@ -469,6 +465,8 @@ public class SimpleCheckers {
                                     if ((moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay)
                                             || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))){
                                         String[][] newBoard = simulateMultikill(y,x,directions[i],depth,board);
+                                        System.out.println("poopy droopy");
+                                        System.out.println(multikill);
                                         if(multikill = true){
                                             path.add(MoveType.MultiKill);
                                         }else path.add(moveType);
@@ -480,6 +478,7 @@ public class SimpleCheckers {
                                         undoPlaceMove(y, x, board, moveType, directions[i]);
                                         multikill = false;
                                     }
+                                    System.out.println(multikill);
                                     if (current_value > best_value || (moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
 
                                         best_value = current_value;
@@ -495,6 +494,7 @@ public class SimpleCheckers {
                                             move[2] = directions[i];
                                             move[3] = 1;
                                             kill = true;
+
                                         }
                                         else if ((moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
                                             move[0] = y;
@@ -519,7 +519,6 @@ public class SimpleCheckers {
             if (depth % 2 == 0) {
                 int max = MIN;
                 boolean kill = false;
-                multikill = false;
                 int child_value;
                 for (int y = 0; y < board.length; y++) {
                     for (int x = 0; x < board[y].length; x++) {
@@ -550,7 +549,6 @@ public class SimpleCheckers {
                                                     path.add(MoveType.MultiKill);
                                                 }else path.add(moveType);
                                             }
-                                            multikill = false;
                                             child_value = alphaBeta(depth + 1, path, alpha, beta, newBoard);
                                         }
                                         else {
@@ -613,7 +611,6 @@ public class SimpleCheckers {
                                                     path.add(MoveType.MultiKill);
                                                 }else path.add(moveType);
                                             }
-                                            multikill = false;
                                             child_value = alphaBeta(depth + 1, path, alpha, beta, newBoard);
                                         }
                                         else {
@@ -646,6 +643,5 @@ public class SimpleCheckers {
 
         }
         return 0;
-
     }
 }

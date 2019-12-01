@@ -409,18 +409,23 @@ public class SimpleCheckers {
         int[] dest = getDirectionCoordinate(y, x, direction);
         int[] trueDest = getDirectionCoordinate(dest[0], dest[1], direction);
         int[] legalMove = checkLegalMove(trueDest[0], trueDest[1], newBoard);
-        for (int i = 0; i < 4; i++) {
-            if (legalMove[i] > 0) {
-                MoveType simMove = checkMove(trueDest[0], trueDest[1], legalMove[i], newBoard);
-                if (simMove == MoveType.Kill || simMove == MoveType.KingSlay) {
-                    multikill = true;
-                    newBoard = simulateMultikill(trueDest[0], trueDest[1], legalMove[i], depth + 1, newBoard);
+        if (checked == MoveType.CrownKingKill || checked == MoveType.CrownKingSlay) {
+            return newBoard;
+        } else{
+            for (int i = 0; i < 4; i++) {
+                if (legalMove[i] > 0) {
+                    MoveType simMove = checkMove(trueDest[0], trueDest[1], legalMove[i], newBoard);
+                    if (simMove == MoveType.CrownKingKill || simMove == MoveType.CrownKingSlay) {
+                        multikill = true;
+                        placeMove(trueDest[0], trueDest[1], newBoard, simMove, legalMove[i]);
+                        break;
+                    } else if (simMove == MoveType.Kill || simMove == MoveType.KingSlay) {
+                        multikill = true;
+                        newBoard = simulateMultikill(trueDest[0], trueDest[1], legalMove[i], depth + 1, newBoard);
+                        break;
 
-                }
-                if (simMove == MoveType.CrownKingKill || simMove == MoveType.CrownKingSlay) {
-                    multikill = true;
-                    placeMove(trueDest[0], trueDest[1], newBoard, simMove, legalMove[i]);
-                    break;
+                    }
+
                 }
             }
         }

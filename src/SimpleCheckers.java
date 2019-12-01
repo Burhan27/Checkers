@@ -366,16 +366,32 @@ public class SimpleCheckers {
     private int stateEvaluation(int depth, String[][] board) {
         int value = 0;
 
-        for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board[i].length; j++) {
+        for(int i = 0; i < board.length; i++) {
+            for(int j = 0; j < board[i].length; j++) {
                 if (board[i][j].equals("w")) {
-                    value -= 2;
+                    if((i == 3 || i == 4) && j > 1 && j < 6 ) {
+                        value -= 3;
+                    } else {
+                        value -= 2;
+                    }
                 } else if (board[i][j].equals("b")) {
-                    value += 2;
+                    if((i == 3 || i == 4) && j > 1 && j < 6 ) {
+                        value += 3;
+                    } else {
+                        value += 2;
+                    }
                 } else if ((board[i][j].equals("wk"))) {
-                    value -= 5;
+                    if((i == 3 || i == 4) && j > 1 && j < 6 ) {
+                        value -= 6;
+                    } else {
+                        value -= 5;
+                    }
                 } else if ((board[i][j].equals("bk"))) {
-                    value += 5;
+                    if((i == 3 || i == 4) && j > 1 && j < 6 ) {
+                        value += 6;
+                    } else {
+                        value += 5;
+                    }
                 }
             }
         }

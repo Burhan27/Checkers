@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 public class SimpleCheckers {
 
-    static int MAX_DEPTH = 6;
+    static int MAX_DEPTH = 4;
     static int MAX = 1000;
     static int MIN = -1000;
     static int[] move = new int[4];
@@ -485,6 +485,7 @@ public class SimpleCheckers {
                                             path.add(MoveType.MultiKill);
                                         } else path.add(moveType);
                                         current_value = alphaBeta(depth + 1, path, alpha, beta, newBoard);
+                                        System.out.println("Boaarher " + current_value);
                                     } else {
                                         path.add(moveType);
                                         placeMove(y, x, board, moveType, directions[i]);
@@ -492,9 +493,10 @@ public class SimpleCheckers {
                                         undoPlaceMove(y, x, board, moveType, directions[i]);
                                         multikill = false;
                                     }
-                                    if (current_value > best_value || (moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+                                    if (current_value > best_value && (moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
 
                                         best_value = current_value;
+                                        System.out.println("best " + best_value + "low " + current_value);
                                         move[0] = y;
                                         move[1] = x;
                                         move[2] = directions[i];

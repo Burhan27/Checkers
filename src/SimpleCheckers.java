@@ -493,7 +493,7 @@ public class SimpleCheckers {
                                         undoPlaceMove(y, x, board, moveType, directions[i]);
                                         multikill = false;
                                     }
-                                    if (current_value > best_value && (moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+                                    if (current_value > best_value || (moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
 
                                         if(move[4] == 0) {
                                             best_value = current_value;

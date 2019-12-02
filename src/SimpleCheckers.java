@@ -1,14 +1,12 @@
-import javax.sound.sampled.EnumControl;
 import java.sql.SQLOutput;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.Scanner;
 
 
 public class SimpleCheckers {
 
-    static int MAX_DEPTH = 4;
+    static int total = 0;
+    static int MAX_DEPTH = 6;
     static int MAX = 1000;
     static int MIN = -1000;
     static int[] move = new int[5];
@@ -216,55 +214,40 @@ public class SimpleCheckers {
     }
 
 
-    private int[] checkLegalMove(int y, int x, String[][] board) {
-        int[] moves = getPossibleMoves(y, x, board);
+    private ArrayList<Integer> checkLegalMove(int y, int x, String[][] board) {
+        ArrayList<Integer> moves = getPossibleMoves(y, x, board);
+        ArrayList<Integer> legalmoves = new ArrayList<>();
         MoveType moveType;
-        int illegal_count = 0;
-        for (int i = 0; i < moves.length; i++) {
-
-            if (moves[i] > 0) {
-                moveType = checkMove(y, x, moves[i], board);
-                if (moveType.equals(MoveType.Illegal) || moveType.equals(MoveType.KingIllegal)) {
-                    moves[i] = -1;
-                } else continue;
-            }
-
-            if (moves[i] == -1) {
-                illegal_count++;
-                if (illegal_count == 4) {
-                    moves[0] = 0;
+        if (moves.size() <= 0) {
+            return legalmoves;
+        } else {
+            for (int i = 0 ; i < moves.size(); i++) {
+                moveType = checkMove(y, x, moves.get(i), board);
+                if (moveType == MoveType.KingIllegal || moveType == MoveType.Illegal) {
+                    continue;
                 }
+                else legalmoves.add(moves.get(i));
             }
         }
-        return moves;
+        return legalmoves;
     }
 
 
-    private int[] getPossibleMoves(int y, int x, String[][] board) {
-        int[] moves = new int[4];
+    private ArrayList<Integer> getPossibleMoves(int y, int x, String[][] board) {
+        ArrayList<Integer> possiblemoves = new ArrayList<Integer>();
         if (board[y][x].equals("b")) {
-            moves[0] = 3;
-            moves[1] = 4;
-            moves[2] = -1;
-            moves[3] = -1;
+            possiblemoves.add(3);
+            possiblemoves.add(4);
         } else if (board[y][x].contains("k")) {
-            moves[0] = 1;
-            moves[1] = 2;
-            moves[2] = 3;
-            moves[3] = 4;
+            possiblemoves.add(1);
+            possiblemoves.add(2);
+            possiblemoves.add(3);
+            possiblemoves.add(4);
         } else if (board[y][x].equals("w")) {
-            moves[0] = 1;
-            moves[1] = 2;
-            moves[2] = -1;
-            moves[3] = -1;
-        } else {
-            moves[0] = -1;
-            moves[1] = -1;
-            moves[2] = -1;
-            moves[3] = -1;
+            possiblemoves.add(1);
+            possiblemoves.add(2);
         }
-
-        return moves;
+        return possiblemoves;
     }
 
 
@@ -365,32 +348,33 @@ public class SimpleCheckers {
 
     private int stateEvaluation(int depth, String[][] board) {
         int value = 0;
+        total++;
 
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
                 if (board[i][j].equals("w")) {
                     if ((i == 3 || i == 4) && j > 1 && j < 6) {
-                        value -= 3;
+                        value -= 30;
                     } else {
-                        value -= 2;
+                        value -= 15;
                     }
                 } else if (board[i][j].equals("b")) {
                     if ((i == 3 || i == 4) && j > 1 && j < 6) {
-                        value += 3;
+                        value += 30;
                     } else {
-                        value += 2;
+                        value += 15;
                     }
                 } else if ((board[i][j].equals("wk"))) {
                     if ((i == 3 || i == 4) && j > 1 && j < 6) {
-                        value -= 6;
+                        value -= 70;
                     } else {
-                        value -= 5;
+                        value -= 50;
                     }
                 } else if ((board[i][j].equals("bk"))) {
                     if ((i == 3 || i == 4) && j > 1 && j < 6) {
-                        value += 6;
+                        value += 70;
                     } else {
-                        value += 5;
+                        value += 50;
                     }
                 }
             }
@@ -408,20 +392,20 @@ public class SimpleCheckers {
         placeMove(y, x, newBoard, checked, direction);
         int[] dest = getDirectionCoordinate(y, x, direction);
         int[] trueDest = getDirectionCoordinate(dest[0], dest[1], direction);
-        int[] legalMove = checkLegalMove(trueDest[0], trueDest[1], newBoard);
-        if (checked == MoveType.CrownKingKill || checked == MoveType.CrownKingSlay) {
+        ArrayList<Integer> legalMove = checkLegalMove(trueDest[0], trueDest[1], newBoard);
+        if (checked == MoveType.CrownKingKill || checked == MoveType.CrownKingSlay || legalMove.size() == 0) {
             return newBoard;
-        } else{
-            for (int i = 0; i < 4; i++) {
-                if (legalMove[i] > 0) {
-                    MoveType simMove = checkMove(trueDest[0], trueDest[1], legalMove[i], newBoard);
+        } else {
+            for (int i = 0; i < legalMove.size(); i++) {
+                if (legalMove.get(i) > 0) {
+                    MoveType simMove = checkMove(trueDest[0], trueDest[1], legalMove.get(i), newBoard);
                     if (simMove == MoveType.CrownKingKill || simMove == MoveType.CrownKingSlay) {
                         multikill = true;
-                        placeMove(trueDest[0], trueDest[1], newBoard, simMove, legalMove[i]);
+                        placeMove(trueDest[0], trueDest[1], newBoard, simMove, legalMove.get(i));
                         break;
                     } else if (simMove == MoveType.Kill || simMove == MoveType.KingSlay) {
                         multikill = true;
-                        newBoard = simulateMultikill(trueDest[0], trueDest[1], legalMove[i], depth + 1, newBoard);
+                        newBoard = simulateMultikill(trueDest[0], trueDest[1], legalMove.get(i), depth + 1, newBoard);
                         break;
 
                     }
@@ -432,16 +416,40 @@ public class SimpleCheckers {
         return newBoard;
     }
 
+    private ArrayList<int[]> getMovablePieces(String[][] board, String type) {
+        ArrayList<int[]> movables = new ArrayList<>();
+        for (int y = 0; y < board.length; y++) {
+            for (int x = 0; x < board[y].length; x++) {
+                if (board[y][x].contains(type)) {
+                    ArrayList<Integer> legalMoves = checkLegalMove(y, x, board);
+                    if (legalMoves.size() == 0) {
+                        continue;
+                    } else {
+                        for (Integer direction : legalMoves) {
+                            int[] coordinates = new int[3];
+                            coordinates[0] = y;
+                            coordinates[1] = x;
+                            coordinates[2] = direction;
+                            movables.add(coordinates);
+                        }
+                    }
+                } else continue;
+            }
+        }
+        return movables;
+    }
+
     private void pcTurn(String[][] board) {
-        ArrayList<MoveType> moves = new ArrayList<MoveType>();
         move[4] = 0;
-        alphaBeta(0, moves, MIN, MAX, board);
+        alphaBeta(0, MIN, MAX, board);
+        //minMax(0,board);
         MoveType moveType = checkMove(move[0], move[1], move[2], board);
         if (move[3] > 0) {
             this.board = simulateMultikill(move[0], move[1], move[2], 0, board);
         } else {
             placeMove(move[0], move[1], board, moveType, move[2]);
         }
+        System.out.println(total);
     }
 
 
@@ -452,13 +460,152 @@ public class SimpleCheckers {
         } else return false;
     }
 
-    private int alphaBeta(int depth, ArrayList<MoveType> path, int alpha, int beta, String[][] board) {
+    private int alphaBeta(int depth, int alpha, int beta, String[][] board) {
         if (depth == MAX_DEPTH || isGameOver(board)) {
             return stateEvaluation(depth, board);
         }
         //kør det hele gennem med en liste over moves du kan lave, tag summen af de forskellige værdier hvor hver anden
         // er et minus tal.
         else if (depth == 0) {
+            boolean kill = false;
+            int current_value;
+            int best_value = MIN;
+            multikill = false;
+            ArrayList<int[]> movable = getMovablePieces(board, "b");
+            for (int[] piece : movable) {
+                MoveType moveType = checkMove(piece[0], piece[1], piece[2], board);
+                if (kill == true) {
+                    if (!(moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+                        continue;
+                    }
+                }
+                if ((moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay)
+                        || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+                    String[][] newBoard;
+                    newBoard = simulateMultikill(piece[0], piece[1], piece[2], 0, board);
+                    current_value = alphaBeta(depth + 1, alpha, beta, newBoard);
+                } else {
+                    placeMove(piece[0], piece[1], board, moveType, piece[2]);
+                    current_value = alphaBeta(depth + 1, alpha, beta, board);
+                    undoPlaceMove(piece[0], piece[1], board, moveType, piece[2]);
+                    multikill = false;
+                }
+
+                if (current_value > best_value || (moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+
+                    if (move[4] == 0) {
+                        best_value = current_value;
+                        move[0] = piece[0];
+                        move[1] = piece[1];
+                        move[2] = piece[2];
+                        move[3] = 0;
+
+                        if (multikill == true) {
+                            move[0] = piece[0];
+                            move[1] = piece[1];
+                            move[2] = piece[2];
+                            move[3] = 1;
+                            move[4] = 1;
+                            kill = true;
+
+
+                        } else if ((moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+                            move[0] = piece[0];
+                            move[1] = piece[1];
+                            move[2] = piece[2];
+                            move[3] = 0;
+                            move[4] = 1;
+                            kill = true;
+                        }
+                    } else if (move[4] > 0) {
+                        if (current_value > best_value) {
+                            best_value = current_value;
+                            move[0] = piece[0];
+                            move[1] = piece[1];
+                            move[2] = piece[2];
+                            move[3] = 0;
+                        }
+                    }
+                }
+            }
+        } else {
+            if (depth % 2 == 0) {
+                int max = MIN;
+                boolean kill = false;
+                int child_value;
+                ArrayList<int[]> movable = getMovablePieces(board, "b");
+                for (int[] piece :
+                        movable) {
+                    MoveType moveType = checkMove(piece[0], piece[1], piece[2], board);
+                    if (kill == true) {
+                        if (!(moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+                            continue;
+                        }
+                    }
+                    if ((moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay)
+                            || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+                        String[][] newBoard;
+                        newBoard = simulateMultikill(piece[0], piece[1], piece[2], 0, board);
+                        child_value = alphaBeta(depth + 1, alpha, beta, newBoard);
+                    } else {
+                        placeMove(piece[0], piece[1], board, moveType, piece[2]);
+                        child_value = alphaBeta(depth + 1, alpha, beta, board);
+                        undoPlaceMove(piece[0], piece[1], board, moveType, piece[2]);
+                        multikill = false;
+                    }
+                    max = Math.max(max, child_value);
+                    if (max > alpha) {
+                        alpha = max;
+                    }
+                    if (alpha >= beta) {
+                        break;
+                    }
+                }
+                return alpha;
+            } else {
+                int min = MAX;
+                boolean kill = false;
+                int child_value;
+                ArrayList<int[]> movable = getMovablePieces(board, "w");
+                for (int[] piece : movable) {
+                    MoveType moveType = checkMove(piece[0], piece[1], piece[2], board);
+                    if (kill == true) {
+                        if (!(moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+                            continue;
+                        }
+                    }
+                    if ((moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay)
+                            || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+                        String[][] newBoard;
+                        newBoard = simulateMultikill(piece[0], piece[1], piece[2], 0, board);
+                        child_value = alphaBeta(depth + 1, alpha, beta, newBoard);
+                    } else {
+                        placeMove(piece[0], piece[1], board, moveType, piece[2]);
+                        child_value = alphaBeta(depth + 1, alpha, beta, board);
+                        undoPlaceMove(piece[0], piece[1], board, moveType, piece[2]);
+                        multikill = false;
+                    }
+                    min = Math.min(min, child_value);
+                    if (min < beta) {
+                        beta = min;
+                    }
+                    if (alpha >= beta) {
+                        break;
+                    }
+                }
+                return beta;
+            }
+        }
+        return 0;
+    }
+
+    /*
+    private int minMax(int depth, String[][] board) {
+        if (depth == MAX_DEPTH || isGameOver(board)) {
+            return stateEvaluation(depth, board);
+        }
+
+        if (depth == 0) {
             boolean kill = false;
             int current_value;
             int best_value = MIN;
@@ -481,21 +628,17 @@ public class SimpleCheckers {
                                     if ((moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay)
                                             || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
                                         String[][] newBoard;
-                                             newBoard =   simulateMultikill(y, x, directions[i], 0, board);
-                                        if (multikill = true) {
-                                            path.add(MoveType.MultiKill);
-                                        } else path.add(moveType);
-                                        current_value = alphaBeta(depth + 1, path, alpha, beta, newBoard);
+                                        newBoard = simulateMultikill(y, x, directions[i], 0, board);
+                                        current_value = minMax(depth + 1, newBoard);
                                     } else {
-                                        path.add(moveType);
                                         placeMove(y, x, board, moveType, directions[i]);
-                                        current_value = alphaBeta(depth + 1, path, alpha, beta, board);
+                                        current_value = minMax(depth + 1, board);
                                         undoPlaceMove(y, x, board, moveType, directions[i]);
                                         multikill = false;
                                     }
                                     if (current_value > best_value || (moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
 
-                                        if(move[4] == 0) {
+                                        if (move[4] == 0) {
                                             best_value = current_value;
                                             move[0] = y;
                                             move[1] = x;
@@ -519,9 +662,8 @@ public class SimpleCheckers {
                                                 move[4] = 1;
                                                 kill = true;
                                             }
-                                        }
-                                        else if (move[4] > 0){
-                                            if(current_value > best_value){
+                                        } else if (move[4] > 0) {
+                                            if (current_value > best_value) {
                                                 best_value = current_value;
                                                 move[0] = y;
                                                 move[1] = x;
@@ -531,10 +673,7 @@ public class SimpleCheckers {
                                         }
 
                                     }
-                                    path.clear();
-                                } else {
-                                    path.clear();
-                                    continue;
+
                                 }
                             }
                         }
@@ -565,44 +704,20 @@ public class SimpleCheckers {
                                                 || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
                                             String[][] newBoard = simulateMultikill(y, x, directions[i], 0, board);
                                             kill = true;
-                                            if (path.size() < depth) {
-                                                if (multikill = true) {
-                                                    path.add(MoveType.MultiKill);
-                                                } else path.add(moveType);
-                                            } else {
-                                                path.subList(depth - 1, path.size() - 1).clear();
-                                                if (multikill = true) {
-                                                    path.add(MoveType.MultiKill);
-                                                } else path.add(moveType);
-                                            }
-                                            child_value = alphaBeta(depth + 1, path, alpha, beta, newBoard);
+                                            child_value = minMax(depth + 1, newBoard);
                                         } else {
-                                            path.add(moveType);
                                             placeMove(y, x, board, moveType, directions[i]);
-                                            if (path.size() < depth) {
-                                                path.add(moveType);
-                                            } else {
-                                                path.subList(depth - 1, path.size() - 1).clear();
-                                                path.add(moveType);
-                                            }
-
-                                            child_value = alphaBeta(depth + 1, path, alpha, beta, board);
+                                            child_value = minMax(depth + 1, board);
                                             undoPlaceMove(y, x, board, moveType, directions[i]);
                                         }
                                         max = Math.max(max, child_value);
-                                        if (max > alpha) {
-                                            alpha = max;
-                                        }
-                                        if (alpha > beta) {
-                                            break;
-                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-                return alpha;
+                return max;
             } else {
                 int min = MAX;
                 boolean kill = false;
@@ -626,46 +741,24 @@ public class SimpleCheckers {
                                                 || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
                                             String[][] newBoard = simulateMultikill(y, x, directions[i], 0, board);
                                             kill = true;
-                                            if (path.size() < depth) {
-                                                if (multikill = true) {
-                                                    path.add(MoveType.MultiKill);
-                                                } else path.add(moveType);
-                                            } else {
-                                                path.subList(depth - 1, path.size() - 1).clear();
-                                                if (multikill = true) {
-                                                    path.add(MoveType.MultiKill);
-                                                } else path.add(moveType);
-                                            }
-                                            child_value = alphaBeta(depth + 1, path, alpha, beta, newBoard);
+                                            child_value = minMax(depth + 1, newBoard);
                                         } else {
-                                            path.add(moveType);
                                             placeMove(y, x, board, moveType, directions[i]);
-                                            if (path.size() < depth) {
-                                                path.add(moveType);
-                                            } else {
-                                                path.subList(depth - 1, path.size() - 1).clear();
-                                                path.add(moveType);
-                                            }
-                                            child_value = alphaBeta(depth + 1, path, alpha, beta, board);
+                                            child_value = minMax(depth + 1, board);
                                             undoPlaceMove(y, x, board, moveType, directions[i]);
                                         }
                                         min = Math.min(min, child_value);
-                                        if (min < beta) {
-                                            beta = min;
-                                        }
-                                        if (alpha > beta) {
-                                            break;
-                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-                return beta;
+                return min;
             }
-
         }
         return 0;
     }
+
+     */
 }

@@ -11,7 +11,7 @@ public class SimpleCheckers {
     static int MAX_DEPTH = 4;
     static int MAX = 1000;
     static int MIN = -1000;
-    static int[] move = new int[4];
+    static int[] move = new int[5];
     String[][] board;
     boolean multikill;
 
@@ -434,6 +434,7 @@ public class SimpleCheckers {
 
     private void pcTurn(String[][] board) {
         ArrayList<MoveType> moves = new ArrayList<MoveType>();
+        move[4] = 0;
         alphaBeta(0, moves, MIN, MAX, board);
         MoveType moveType = checkMove(move[0], move[1], move[2], board);
         if (move[3] > 0) {
@@ -485,7 +486,6 @@ public class SimpleCheckers {
                                             path.add(MoveType.MultiKill);
                                         } else path.add(moveType);
                                         current_value = alphaBeta(depth + 1, path, alpha, beta, newBoard);
-                                        System.out.println("Boaarher " + current_value);
                                     } else {
                                         path.add(moveType);
                                         placeMove(y, x, board, moveType, directions[i]);
@@ -495,27 +495,39 @@ public class SimpleCheckers {
                                     }
                                     if (current_value > best_value && (moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
 
-                                        best_value = current_value;
-                                        System.out.println("best " + best_value + "low " + current_value);
-                                        move[0] = y;
-                                        move[1] = x;
-                                        move[2] = directions[i];
-                                        move[3] = 0;
-
-
-                                        if (multikill == true) {
-                                            move[0] = y;
-                                            move[1] = x;
-                                            move[2] = directions[i];
-                                            move[3] = 1;
-                                            kill = true;
-
-                                        } else if ((moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+                                        if(move[4] == 0) {
+                                            best_value = current_value;
                                             move[0] = y;
                                             move[1] = x;
                                             move[2] = directions[i];
                                             move[3] = 0;
-                                            kill = true;
+
+                                            if (multikill == true) {
+                                                move[0] = y;
+                                                move[1] = x;
+                                                move[2] = directions[i];
+                                                move[3] = 1;
+                                                move[4] = 1;
+                                                kill = true;
+
+
+                                            } else if ((moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+                                                move[0] = y;
+                                                move[1] = x;
+                                                move[2] = directions[i];
+                                                move[3] = 0;
+                                                move[4] = 1;
+                                                kill = true;
+                                            }
+                                        }
+                                        else if (move[4] > 0){
+                                            if(current_value > best_value){
+                                                best_value = current_value;
+                                                move[0] = y;
+                                                move[1] = x;
+                                                move[2] = directions[i];
+                                                move[3] = 0;
+                                            }
                                         }
 
                                     }

@@ -6,9 +6,9 @@ import java.util.Scanner;
 public class SimpleCheckers {
 
     static int total = 0;
-    static int MAX_DEPTH = 6;
-    static int MAX = 1000;
-    static int MIN = -1000;
+    static int MAX_DEPTH = 10;
+    static int MAX = 100000;
+    static int MIN = -100000;
     static int[] move = new int[5];
     String[][] board;
     boolean multikill;
@@ -144,9 +144,14 @@ public class SimpleCheckers {
                 } else continue;
             }
         }
-        if (bcount == 0) {
+
+        ArrayList<int[]> whitepos = getMovablePieces(board, "w");
+        ArrayList<int[]> blackpos = getMovablePieces(board, "b");
+
+
+        if (bcount == 0 || blackpos.size() == 0) {
             return "w";
-        } else if (wcount == 0) {
+        } else if (wcount == 0 || whitepos.size() == 0) {
             return "b";
         } else return "NA";
     }
@@ -221,12 +226,11 @@ public class SimpleCheckers {
         if (moves.size() <= 0) {
             return legalmoves;
         } else {
-            for (int i = 0 ; i < moves.size(); i++) {
+            for (int i = 0; i < moves.size(); i++) {
                 moveType = checkMove(y, x, moves.get(i), board);
                 if (moveType == MoveType.KingIllegal || moveType == MoveType.Illegal) {
                     continue;
-                }
-                else legalmoves.add(moves.get(i));
+                } else legalmoves.add(moves.get(i));
             }
         }
         return legalmoves;
@@ -345,36 +349,67 @@ public class SimpleCheckers {
         return board;
     }
 
+    private int[] upcomingKingsAndKillers(String[][] board, String type) {
+        ArrayList<int[]> movables = getMovablePieces(board, type);
+        int[] kingAndKillers = {0, 0};
+        for (int[] piece : movables) {
+            if (type.contains("w")) {
+                if (piece[0] == 1 &&
+                        (board[piece[0] - 1][piece[1] + 1].equals("-") || board[piece[0] - 1][piece[1] - 1].equals("-"))) {
+                    kingAndKillers[0]++;
+                }
+            } else if (type.contains("b")) {
+                if (piece[0] == 7 &&
+                        (board[piece[0] + 1][piece[1] + 1].equals("-") || board[piece[0] + 1][piece[1] - 1].equals("-"))) {
+                    kingAndKillers[0]++;
+                }
+            }
+            MoveType mv = checkMove(piece[0], piece[1], piece[2], board);
+            if (mv.equals(MoveType.Kill) || mv.equals(MoveType.CrownKingSlay)
+                    || mv.equals(MoveType.KingSlay) || mv.equals(MoveType.CrownKingKill)) {
+                kingAndKillers[1]++;
+            }
+        }
+        return kingAndKillers;
+    }
 
     private int stateEvaluation(int depth, String[][] board) {
         int value = 0;
         total++;
 
+        String winner = getWinner(board);
+        if(winner.equals("b")){
+            value+=10000;
+        }
+        else if(winner.equals("w")){
+            value -= 10000;
+        }
+
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
                 if (board[i][j].equals("w")) {
                     if ((i == 3 || i == 4) && j > 1 && j < 6) {
-                        value -= 30;
+                        value -= 3;
                     } else {
-                        value -= 15;
+                        value -= 2;
                     }
                 } else if (board[i][j].equals("b")) {
                     if ((i == 3 || i == 4) && j > 1 && j < 6) {
-                        value += 30;
+                        value += 3;
                     } else {
-                        value += 15;
+                        value += 2;
                     }
                 } else if ((board[i][j].equals("wk"))) {
                     if ((i == 3 || i == 4) && j > 1 && j < 6) {
-                        value -= 70;
+                        value -= 6;
                     } else {
-                        value -= 50;
+                        value -= 5;
                     }
                 } else if ((board[i][j].equals("bk"))) {
                     if ((i == 3 || i == 4) && j > 1 && j < 6) {
-                        value += 70;
+                        value += 6;
                     } else {
-                        value += 50;
+                        value += 5;
                     }
                 }
             }
@@ -387,7 +422,6 @@ public class SimpleCheckers {
         for (int i = 0; i < board.length; i++) {
             System.arraycopy(board[i], 0, newBoard[i], 0, board[i].length);
         }
-
         MoveType checked = checkMove(y, x, direction, newBoard);
         placeMove(y, x, newBoard, checked, direction);
         int[] dest = getDirectionCoordinate(y, x, direction);
@@ -397,18 +431,15 @@ public class SimpleCheckers {
             return newBoard;
         } else {
             for (int i = 0; i < legalMove.size(); i++) {
-                if (legalMove.get(i) > 0) {
-                    MoveType simMove = checkMove(trueDest[0], trueDest[1], legalMove.get(i), newBoard);
-                    if (simMove == MoveType.CrownKingKill || simMove == MoveType.CrownKingSlay) {
-                        multikill = true;
-                        placeMove(trueDest[0], trueDest[1], newBoard, simMove, legalMove.get(i));
-                        break;
-                    } else if (simMove == MoveType.Kill || simMove == MoveType.KingSlay) {
-                        multikill = true;
-                        newBoard = simulateMultikill(trueDest[0], trueDest[1], legalMove.get(i), depth + 1, newBoard);
-                        break;
-
-                    }
+                MoveType simMove = checkMove(trueDest[0], trueDest[1], legalMove.get(i), newBoard);
+                if (simMove == MoveType.CrownKingKill || simMove == MoveType.CrownKingSlay) {
+                    multikill = true;
+                    placeMove(trueDest[0], trueDest[1], newBoard, simMove, legalMove.get(i));
+                    break;
+                } else if (simMove == MoveType.Kill || simMove == MoveType.KingSlay) {
+                    multikill = true;
+                    newBoard = simulateMultikill(trueDest[0], trueDest[1], legalMove.get(i), depth, newBoard);
+                    break;
 
                 }
             }
@@ -426,11 +457,16 @@ public class SimpleCheckers {
                         continue;
                     } else {
                         for (Integer direction : legalMoves) {
+                            MoveType mv = checkMove(y, x, direction, board);
                             int[] coordinates = new int[3];
                             coordinates[0] = y;
                             coordinates[1] = x;
                             coordinates[2] = direction;
-                            movables.add(coordinates);
+                            if (mv == MoveType.Kill || mv == MoveType.KingSlay || mv == MoveType.CrownKingKill || mv == MoveType.CrownKingSlay) {
+                                movables.add(0, coordinates);
+                            } else {
+                                movables.add(coordinates);
+                            }
                         }
                     }
                 } else continue;
@@ -442,7 +478,6 @@ public class SimpleCheckers {
     private void pcTurn(String[][] board) {
         move[4] = 0;
         alphaBeta(0, MIN, MAX, board);
-        //minMax(0,board);
         MoveType moveType = checkMove(move[0], move[1], move[2], board);
         if (move[3] > 0) {
             this.board = simulateMultikill(move[0], move[1], move[2], 0, board);
@@ -466,7 +501,7 @@ public class SimpleCheckers {
         }
         //kør det hele gennem med en liste over moves du kan lave, tag summen af de forskellige værdier hvor hver anden
         // er et minus tal.
-        else if (depth == 0) {
+        if (depth == 0) {
             boolean kill = false;
             int current_value;
             int best_value = MIN;
@@ -500,104 +535,112 @@ public class SimpleCheckers {
                         move[2] = piece[2];
                         move[3] = 0;
 
-                        if (multikill == true) {
-                            move[0] = piece[0];
-                            move[1] = piece[1];
-                            move[2] = piece[2];
+
+                    if (multikill == true) {
+                        move[0] = piece[0];
+                        move[1] = piece[1];
+                        move[2] = piece[2];
+                        move[3] = 1;
+                        move[4] = 1;
+                        kill = true;
+
+
+                    } else if ((moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+                        move[0] = piece[0];
+                        move[1] = piece[1];
+                        move[2] = piece[2];
+                        move[3] = 0;
+                        move[4] = 1;
+                        kill = true;
+                    }
+
+                } else if (move[4] > 0) {
+                    if (current_value > best_value) {
+                        best_value = current_value;
+                        move[0] = piece[0];
+                        move[1] = piece[1];
+                        move[2] = piece[2];
+                        if(multikill){
                             move[3] = 1;
-                            move[4] = 1;
-                            kill = true;
-
-
-                        } else if ((moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
-                            move[0] = piece[0];
-                            move[1] = piece[1];
-                            move[2] = piece[2];
-                            move[3] = 0;
-                            move[4] = 1;
                             kill = true;
                         }
-                    } else if (move[4] > 0) {
-                        if (current_value > best_value) {
-                            best_value = current_value;
-                            move[0] = piece[0];
-                            move[1] = piece[1];
-                            move[2] = piece[2];
-                            move[3] = 0;
-                        }
+                        else  move[3] = 0;
                     }
                 }
-            }
-        } else {
-            if (depth % 2 == 0) {
-                int max = MIN;
-                boolean kill = false;
-                int child_value;
-                ArrayList<int[]> movable = getMovablePieces(board, "b");
-                for (int[] piece :
-                        movable) {
-                    MoveType moveType = checkMove(piece[0], piece[1], piece[2], board);
-                    if (kill == true) {
-                        if (!(moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
-                            continue;
-                        }
-                    }
-                    if ((moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay)
-                            || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
-                        String[][] newBoard;
-                        newBoard = simulateMultikill(piece[0], piece[1], piece[2], 0, board);
-                        child_value = alphaBeta(depth + 1, alpha, beta, newBoard);
-                    } else {
-                        placeMove(piece[0], piece[1], board, moveType, piece[2]);
-                        child_value = alphaBeta(depth + 1, alpha, beta, board);
-                        undoPlaceMove(piece[0], piece[1], board, moveType, piece[2]);
-                        multikill = false;
-                    }
-                    max = Math.max(max, child_value);
-                    if (max > alpha) {
-                        alpha = max;
-                    }
-                    if (alpha >= beta) {
-                        break;
-                    }
-                }
-                return alpha;
-            } else {
-                int min = MAX;
-                boolean kill = false;
-                int child_value;
-                ArrayList<int[]> movable = getMovablePieces(board, "w");
-                for (int[] piece : movable) {
-                    MoveType moveType = checkMove(piece[0], piece[1], piece[2], board);
-                    if (kill == true) {
-                        if (!(moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
-                            continue;
-                        }
-                    }
-                    if ((moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay)
-                            || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
-                        String[][] newBoard;
-                        newBoard = simulateMultikill(piece[0], piece[1], piece[2], 0, board);
-                        child_value = alphaBeta(depth + 1, alpha, beta, newBoard);
-                    } else {
-                        placeMove(piece[0], piece[1], board, moveType, piece[2]);
-                        child_value = alphaBeta(depth + 1, alpha, beta, board);
-                        undoPlaceMove(piece[0], piece[1], board, moveType, piece[2]);
-                        multikill = false;
-                    }
-                    min = Math.min(min, child_value);
-                    if (min < beta) {
-                        beta = min;
-                    }
-                    if (alpha >= beta) {
-                        break;
-                    }
-                }
-                return beta;
             }
         }
-        return 0;
+    } else
+
+    {
+        if (depth % 2 == 0) {
+            int max = MIN;
+            boolean kill = false;
+            int child_value;
+            ArrayList<int[]> movable = getMovablePieces(board, "b");
+            for (int[] piece :
+                    movable) {
+                MoveType moveType = checkMove(piece[0], piece[1], piece[2], board);
+                if (kill == true) {
+                    if (!(moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+                        continue;
+                    }
+                }
+                if ((moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay)
+                        || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+                    String[][] newBoard;
+                    newBoard = simulateMultikill(piece[0], piece[1], piece[2], 0, board);
+                    child_value = alphaBeta(depth + 1, alpha, beta, newBoard);
+                    kill = true;
+                } else {
+                    placeMove(piece[0], piece[1], board, moveType, piece[2]);
+                    child_value = alphaBeta(depth + 1, alpha, beta, board);
+                    undoPlaceMove(piece[0], piece[1], board, moveType, piece[2]);
+                }
+                max = Math.max(max, child_value);
+                if (max > alpha) {
+                    alpha = max;
+                }
+                if (alpha >= beta) {
+                    break;
+                }
+            }
+            return alpha;
+        } else {
+            int min = MAX;
+            boolean kill = false;
+            int child_value;
+            ArrayList<int[]> movable = getMovablePieces(board, "w");
+            for (int[] piece : movable) {
+                MoveType moveType = checkMove(piece[0], piece[1], piece[2], board);
+                if (kill == true) {
+                    if (!(moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay) || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+                        continue;
+                    }
+                }
+                if ((moveType.equals(MoveType.Kill) || moveType.equals(MoveType.KingSlay)
+                        || moveType.equals(MoveType.CrownKingKill) || moveType.equals(MoveType.CrownKingSlay))) {
+                    String[][] newBoard;
+                    newBoard = simulateMultikill(piece[0], piece[1], piece[2], 0, board);
+                    child_value = alphaBeta(depth + 1, alpha, beta, newBoard);
+                    kill = true;
+                } else {
+                    placeMove(piece[0], piece[1], board, moveType, piece[2]);
+                    child_value = alphaBeta(depth + 1, alpha, beta, board);
+                    undoPlaceMove(piece[0], piece[1], board, moveType, piece[2]);
+                }
+                min = Math.min(min, child_value);
+                if (min < beta) {
+                    beta = min;
+                }
+                if (alpha >= beta) {
+                    break;
+                }
+            }
+            return beta;
+        }
     }
+        return 0;
+}
 
     /*
     private int minMax(int depth, String[][] board) {
